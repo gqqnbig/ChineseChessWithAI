@@ -15,14 +15,14 @@ namespace 中国象棋
 
 		public IntPoint Location { get; set; }
 
-		private Func<Piece, Piece[][], IEnumerable<IntPoint>> getPossibleMovements;
+		private Func<Piece, Piece[,], IEnumerable<IntPoint>> getPossibleMovements;
 
-		public Piece(Func<Piece, Piece[][], IEnumerable<IntPoint>> getPossibleMovements)
+		public Piece(Func<Piece, Piece[,], IEnumerable<IntPoint>> getPossibleMovements)
 		{
 			this.getPossibleMovements = getPossibleMovements;
 		}
 
-		public IEnumerable<IntPoint> GetPossibleMovements(Piece[][] piecesOnBoard)
+		public IEnumerable<IntPoint> GetPossibleMovements(Piece[,] piecesOnBoard)
 		{
 			return getPossibleMovements(this, piecesOnBoard);
 		}
