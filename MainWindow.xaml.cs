@@ -109,7 +109,7 @@ namespace 中国象棋
 						 if (pieces[location.Y - 1, location.X + 2]?.Color != p.Color)
 							 moves.Add(new IntPoint(location.X + 2, location.Y - 1));
 						 if (pieces[location.Y + 1, location.X + 2]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 2, location.Y - 1));
+							 moves.Add(new IntPoint(location.X + 2, location.Y + 1));
 					 }
 				 }
 
@@ -397,6 +397,7 @@ namespace 中国象棋
 
 					Grid.SetColumn(button, x);
 					Grid.SetRow(button, y);
+					Panel.SetZIndex(button, 1);
 					board.Children.Add(button);
 				}
 			}
@@ -406,7 +407,7 @@ namespace 中国象棋
 		{
 			for (int i = board.Children.Count - 1; i >= 0; i--)
 			{
-				if (board.Children[i] is Rectangle)
+				if (board.Children[i] is Border)
 					board.Children.RemoveAt(i);
 			}
 		}
@@ -415,7 +416,7 @@ namespace 中国象棋
 		{
 			ToggleButton button = (ToggleButton)sender;
 
-			for (int i = board.Children.Count-1; i >=0 ; i--)
+			for (int i = board.Children.Count - 1; i >= 0; i--)
 			{
 				ToggleButton otherButton = board.Children[i] as ToggleButton;
 				if (otherButton != null && otherButton != button)
@@ -431,17 +432,45 @@ namespace 中国象棋
 
 			foreach (var move in moves)
 			{
-				Rectangle rect = new Rectangle();
-				rect.StrokeDashArray = new DoubleCollection() { 2, 4 };
-				rect.StrokeThickness = 2;
-				rect.Stroke = Brushes.OrangeRed;
-				Panel.SetZIndex(rect, 1);
+				Border border = new Border();
+				border.BorderThickness = new Thickness(2);
+				Rectangle rect = new Rectangle() { Stroke = Brushes.OrangeRed, StrokeThickness = 2, StrokeDashArray = new DoubleCollection() { 2, 4 } };
+				var relativeSource = new RelativeSource(RelativeSourceMode.FindAncestor);
+				relativeSource.AncestorType = typeof(Border);
 
-				Grid.SetColumn(rect, move.X);
-				Grid.SetRow(rect, move.Y);
-				board.Children.Add(rect);
+				rect.SetBinding(Rectangle.RadiusXProperty, new Binding("CornerRadius.TopRight") { RelativeSource = relativeSource });
+				rect.SetBinding(Rectangle.RadiusYProperty, new Binding("CornerRadius.BottomLeft") { RelativeSource = relativeSource });
+				rect.SetBinding(Rectangle.WidthProperty, new Binding("ActualWidth") { RelativeSource = relativeSource });
+				rect.SetBinding(Rectangle.HeightProperty, new Binding("ActualHeight") { RelativeSource = relativeSource });
+
+				border.BorderBrush = new VisualBrush() { Visual = rect };
+
+				Button b = new Button() { Opacity = 0 };
+				b.Click += MoveButton_Click;
+				b.Tag = new IntPoint(x, y);
+				border.Child = b;
+				
+
+				Panel.SetZIndex(border, 2);
+
+				Grid.SetColumn(border, move.X);
+				Grid.SetRow(border, move.Y);
+				board.Children.Add(border);
 			}
 
+		}
+
+		private void MoveButton_Click(object sender, RoutedEventArgs e)
+		{
+			Button button = (Button)sender;
+			IntPoint pieceLocation = (IntPoint)button.Tag;
+			int x = Grid.GetColumn((UIElement)button.Parent);
+			int y = Grid.GetRow((UIElement)button.Parent);
+
+			pieces[y, x] = pieces[pieceLocation.Y, pieceLocation.X];
+			pieces[pieceLocation.Y, pieceLocation.X] = null;
+
+			UpdateBoard();
 		}
 
 		public static IntPoint CoordinatesOf<T>(T[,] matrix, Predicate<T> p)
