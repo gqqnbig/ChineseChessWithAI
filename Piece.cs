@@ -7,7 +7,7 @@ using IntPoint = System.Drawing.Point;
 
 namespace 中国象棋
 {
-	class Piece
+	public class Piece
 	{
 		public string Name { get; set; }
 

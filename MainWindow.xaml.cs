@@ -23,6 +23,7 @@ namespace 中国象棋
 	public partial class MainWindow : Window
 	{
 		Piece[,] pieces = new Piece[10, 9];
+		bool isRedTurn = true;
 
 		public MainWindow()
 		{
@@ -99,7 +100,7 @@ namespace 中国象棋
 						 if (pieces[location.Y - 1, location.X - 2]?.Color != p.Color)
 							 moves.Add(new IntPoint(location.X - 2, location.Y - 1));
 						 if (pieces[location.Y + 1, location.X - 2]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 2, location.Y - 1));
+							 moves.Add(new IntPoint(location.X - 2, location.Y + 1));
 					 }
 				 }
 				 if (location.X + 2 < 9)
@@ -289,7 +290,7 @@ namespace 中国象棋
 						 moves.Add(new IntPoint(location.X, y));
 					 else
 					 {
-						 for (int yy = y + 1; yy < 10; yy--)
+						 for (int yy = y + 1; yy < 10; yy++)
 						 {
 							 if (pieces[yy, location.X] != null && pieces[yy, location.X].Color != p.Color)
 							 {
@@ -306,7 +307,7 @@ namespace 中国象棋
 			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves兵 = (p, location, pieces) =>
 			 {
 				 List<IntPoint> moves = new List<IntPoint>();
-				 var jiangLocation = CoordinatesOf(pieces, jiang => jiang != null && jiang.Name == "将" && jiang.Color == p.Color);
+				 var jiangLocation = CoordinatesOf(pieces, jiang => jiang.Name == "将" && jiang.Color == p.Color);
 				 if (jiangLocation.Y <= 4)
 				 {
 					 if (pieces[location.Y + 1, location.X]?.Color != p.Color)
@@ -380,6 +381,7 @@ namespace 中国象棋
 
 		void UpdateBoard()
 		{
+
 			board.Children.Clear();
 			for (int x = 0; x < 9; x++)
 			{
@@ -392,6 +394,7 @@ namespace 中国象棋
 					var button = new ToggleButton();
 					button.Content = piece.Name;
 					button.Foreground = piece.Color == ChessColor.Red ? Brushes.Red : Brushes.Black;
+					button.IsEnabled = (piece.Color == ChessColor.Red && isRedTurn) || (piece.Color == ChessColor.Black && isRedTurn == false);
 					button.Checked += Button_Checked;
 					button.Unchecked += Button_Unchecked;
 
@@ -400,6 +403,18 @@ namespace 中国象棋
 					Panel.SetZIndex(button, 1);
 					board.Children.Add(button);
 				}
+			}
+
+			var termination = IsTerminated(pieces);
+			if (termination.HasValue)
+			{
+				if (termination.Value)
+					MessageBox.Show("红胜了");
+				else
+					MessageBox.Show("黑胜了");
+
+				board.IsEnabled = false;
+				return;
 			}
 		}
 
@@ -449,7 +464,7 @@ namespace 中国象棋
 				b.Click += MoveButton_Click;
 				b.Tag = new IntPoint(x, y);
 				border.Child = b;
-				
+
 
 				Panel.SetZIndex(border, 2);
 
@@ -470,6 +485,7 @@ namespace 中国象棋
 			pieces[y, x] = pieces[pieceLocation.Y, pieceLocation.X];
 			pieces[pieceLocation.Y, pieceLocation.X] = null;
 
+			isRedTurn = !isRedTurn;
 			UpdateBoard();
 		}
 
@@ -482,12 +498,28 @@ namespace 中国象棋
 			{
 				for (int y = 0; y < h; ++y)
 				{
-					if (p(matrix[x, y]))
+					if (matrix[x, y]!=null && p(matrix[x, y]))
 						return new IntPoint(y, x);
 				}
 			}
 
 			return new IntPoint(-1, -1);
+		}
+
+		/// <summary>
+		/// 如果红胜，返回true；如果黑胜，返回false；如果没有胜负，返回null。
+		/// </summary>
+		/// <param name="pieces"></param>
+		/// <returns></returns>
+		public static bool? IsTerminated(Piece[,] pieces)
+		{
+			if (CoordinatesOf(pieces, p => p.Name == "将" && p.Color == ChessColor.Black).X==-1)
+				return true;
+
+			if (CoordinatesOf(pieces, p => p.Name == "将" && p.Color == ChessColor.Red).X == -1)
+				return false;
+
+			return null;
 		}
 	}
 }
