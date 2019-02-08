@@ -32,5 +32,10 @@
         </Grid.RowDefinitions>
 
         <Button Grid.Row="0" Grid.Column="0"  Content="hello" Foreground="Red"/>
+        <Rectangle StrokeThickness="2" StrokeDashArray="2,4">
+            <Rectangle.Stroke>
+                <SolidColorBrush Color="Red" />
+            </Rectangle.Stroke>
+        </Rectangle>
     </Grid>
 </Window>
