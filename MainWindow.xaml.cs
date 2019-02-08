@@ -129,9 +129,9 @@ namespace 中国象棋
 					 if (pieces[location.Y + 1, location.X] == null)
 					 {
 						 if (pieces[location.Y + 2, location.X - 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 1, location.Y - 2));
+							 moves.Add(new IntPoint(location.X - 1, location.Y + 2));
 						 if (pieces[location.Y + 2, location.X + 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 1, location.Y - 2));
+							 moves.Add(new IntPoint(location.X + 1, location.Y + 2));
 					 }
 				 }
 
@@ -415,11 +415,13 @@ namespace 中国象棋
 		{
 			ToggleButton button = (ToggleButton)sender;
 
-			foreach (var item in board.Children)
+			for (int i = board.Children.Count-1; i >=0 ; i--)
 			{
-				ToggleButton otherButton = item as ToggleButton;
+				ToggleButton otherButton = board.Children[i] as ToggleButton;
 				if (otherButton != null && otherButton != button)
+				{
 					otherButton.IsChecked = false;
+				}
 			}
 
 			int x = Grid.GetColumn(button);
