@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using IntPoint = System.Drawing.Point;
 
 namespace 中国象棋
 {
 	public class Board : IReadOnlyCollection<Piece>
 	{
-		Piece[,] board;
+		readonly Piece[,] board;
 
 		public Piece this[int y, int x]
 		{
@@ -118,9 +119,9 @@ namespace 中国象棋
 					if (pieces[location.Y, location.X - 1] == null)
 					{
 						//如果为null，则?.Color返回null，null!=p.Color。
-						if (pieces[location.Y - 1, location.X - 2]?.Color != p.Color)
+						if (location.Y - 1 >= 0 && pieces[location.Y - 1, location.X - 2]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 2, location.Y - 1));
-						if (pieces[location.Y + 1, location.X - 2]?.Color != p.Color)
+						if (location.Y + 1 <= 9 && pieces[location.Y + 1, location.X - 2]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 2, location.Y + 1));
 					}
 				}
@@ -128,9 +129,9 @@ namespace 中国象棋
 				{
 					if (pieces[location.Y, location.X + 1] == null)
 					{
-						if (pieces[location.Y - 1, location.X + 2]?.Color != p.Color)
+						if (location.Y - 1 >= 0 && pieces[location.Y - 1, location.X + 2]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X + 2, location.Y - 1));
-						if (pieces[location.Y + 1, location.X + 2]?.Color != p.Color)
+						if (location.Y + 1 <= 9 && pieces[location.Y + 1, location.X + 2]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X + 2, location.Y + 1));
 					}
 				}
@@ -139,9 +140,9 @@ namespace 中国象棋
 				{
 					if (pieces[location.Y - 1, location.X] == null)
 					{
-						if (pieces[location.Y - 2, location.X - 1]?.Color != p.Color)
+						if (location.X - 1 >= 0 && pieces[location.Y - 2, location.X - 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 1, location.Y - 2));
-						if (pieces[location.Y - 2, location.X + 1]?.Color != p.Color)
+						if (location.X <= 8 && pieces[location.Y - 2, location.X + 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X + 1, location.Y - 2));
 					}
 				}
@@ -150,9 +151,9 @@ namespace 中国象棋
 				{
 					if (pieces[location.Y + 1, location.X] == null)
 					{
-						if (pieces[location.Y + 2, location.X - 1]?.Color != p.Color)
+						if (location.X - 1 >= 0 && pieces[location.Y + 2, location.X - 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 1, location.Y + 2));
-						if (pieces[location.Y + 2, location.X + 1]?.Color != p.Color)
+						if (location.X <= 8 && pieces[location.Y + 2, location.X + 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X + 1, location.Y + 2));
 					}
 				}
@@ -428,13 +429,15 @@ namespace 中国象棋
 
 		public Board Move(IntPoint location, IntPoint targetLocation, out Piece eatenPiece)
 		{
-			board = (Piece[,])board.Clone();
-			board[targetLocation.Y, targetLocation.X] = board[location.Y, location.X];
+			Debug.Assert(board[location.Y, location.X] != null, $"想要从({location.X},{location.Y})走子，但该位置没有棋子。");
 
-			eatenPiece = board[location.Y, location.X];
-			board[location.Y, location.X] = null;
+			var newBoard = (Piece[,])board.Clone();
+			newBoard[targetLocation.Y, targetLocation.X] = newBoard[location.Y, location.X];
 
-			return new Board(board);
+			eatenPiece = newBoard[location.Y, location.X];
+			newBoard[location.Y, location.X] = null;
+
+			return new Board(newBoard);
 		}
 
 
@@ -494,6 +497,8 @@ namespace 中国象棋
 					{
 						if (board[y, x] != null)
 						{
+							hashcode = hashcode ^ x;
+							hashcode = hashcode ^ y;
 							hashcode = hashcode ^ board[y, x].Name.GetHashCode();
 							hashcode = hashcode ^ board[y, x].Color.GetHashCode();
 						}
