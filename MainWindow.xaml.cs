@@ -22,7 +22,7 @@ namespace 中国象棋
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		Piece[,] pieces = new Piece[10, 9];
+		Board pieces;
 		bool isRedTurn = true;
 
 		public MainWindow()
@@ -32,378 +32,7 @@ namespace 中国象棋
 
 		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves车 = (p, location, pieces) =>
-			{
-				List<IntPoint> moves = new List<IntPoint>();
-				for (int x = location.X - 1; x >= 0; x--)
-				{
-					if (pieces[location.Y, x] == null)
-						moves.Add(new IntPoint(x, location.Y));
-					else if (pieces[location.Y, x].Color != p.Color) //吃子
-					{
-						moves.Add(new IntPoint(x, location.Y));
-						break;
-					}
-					else
-						break;
-				}
-
-				for (int x = location.X + 1; x < 9; x++)
-				{
-					if (pieces[location.Y, x] == null)
-						moves.Add(new IntPoint(x, location.Y));
-					else if (pieces[location.Y, x].Color != p.Color) //吃子
-					{
-						moves.Add(new IntPoint(x, location.Y));
-						break;
-					}
-					else
-						break;
-				}
-
-				for (int y = location.Y - 1; y >= 0; y--)
-				{
-					if (pieces[y, location.X] == null)
-						moves.Add(new IntPoint(location.X, y));
-					else if (pieces[y, location.X].Color != p.Color) //吃子
-					{
-						moves.Add(new IntPoint(location.X, y));
-						break;
-					}
-					else
-						break;
-				}
-
-				for (int y = location.Y + 1; y < 10; y++)
-				{
-					if (pieces[y, location.X] == null)
-						moves.Add(new IntPoint(location.X, y));
-					else if (pieces[y, location.X].Color != p.Color) //吃子
-					{
-						moves.Add(new IntPoint(location.X, y));
-						break;
-					}
-					else
-						break;
-				}
-				return moves;
-			};
-
-			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves马 = (p, location, pieces) =>
-			 {
-				 List<IntPoint> moves = new List<IntPoint>();
-				 if (location.X - 2 >= 0)
-				 {
-					 if (pieces[location.Y, location.X - 1] == null)
-					 {
-						 //如果为null，则?.Color返回null，null!=p.Color。
-						 if (pieces[location.Y - 1, location.X - 2]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 2, location.Y - 1));
-						 if (pieces[location.Y + 1, location.X - 2]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 2, location.Y + 1));
-					 }
-				 }
-				 if (location.X + 2 < 9)
-				 {
-					 if (pieces[location.Y, location.X + 1] == null)
-					 {
-						 if (pieces[location.Y - 1, location.X + 2]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 2, location.Y - 1));
-						 if (pieces[location.Y + 1, location.X + 2]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 2, location.Y + 1));
-					 }
-				 }
-
-				 if (location.Y - 2 >= 0)
-				 {
-					 if (pieces[location.Y - 1, location.X] == null)
-					 {
-						 if (pieces[location.Y - 2, location.X - 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 1, location.Y - 2));
-						 if (pieces[location.Y - 2, location.X + 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 1, location.Y - 2));
-					 }
-				 }
-
-				 if (location.Y + 2 < 10)
-				 {
-					 if (pieces[location.Y + 1, location.X] == null)
-					 {
-						 if (pieces[location.Y + 2, location.X - 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 1, location.Y + 2));
-						 if (pieces[location.Y + 2, location.X + 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 1, location.Y + 2));
-					 }
-				 }
-
-				 return moves;
-			 };
-
-			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves象 = (p, location, pieces) =>
-			 {
-				 List<IntPoint> moves = new List<IntPoint>();
-				 if (location.Y - 2 >= 0 && location.X - 2 >= 0 && location.Y <= 4 && pieces[location.Y - 2, location.X - 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 2, location.Y - 2));
-
-				 if (location.Y - 2 >= 0 && location.X + 2 < 9 && location.Y <= 4 && pieces[location.Y - 2, location.X + 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 2, location.Y - 2));
-
-				 if (location.X - 2 >= 0 && location.Y <= 2 && pieces[location.Y + 2, location.X - 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 2, location.Y + 2));
-
-				 if (location.X + 2 < 9 && location.Y <= 2 && pieces[location.Y + 2, location.X + 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 2, location.Y + 2));
-
-
-				 if (location.X - 2 >= 0 && location.Y >= 7 && pieces[location.Y - 2, location.X - 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 2, location.Y - 2));
-
-				 if (location.X + 2 < 9 && location.Y >= 7 && pieces[location.Y - 2, location.X + 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 2, location.Y - 2));
-
-				 if (location.Y >= 5 && location.X - 2 >= 0 && location.Y + 2 <= 9 && pieces[location.Y + 2, location.X - 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 2, location.Y + 2));
-
-				 if (location.Y >= 5 && location.X + 2 < 9 && location.Y + 2 <= 9 && pieces[location.Y + 2, location.X + 2]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 2, location.Y + 2));
-
-				 return moves;
-			 };
-
-			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves士 = (p, location, pieces) =>
-			 {
-				 List<IntPoint> moves = new List<IntPoint>();
-				 if (location.X - 1 >= 0 && location.Y - 1 >= 0 && location.Y <= 2 && location.X >= 4 && pieces[location.Y - 1, location.X - 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 1, location.Y - 1));
-
-				 if (location.X + 1 >= 0 && location.Y - 1 >= 0 && location.Y <= 2 && location.X <= 4 && pieces[location.Y - 1, location.X + 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 1, location.Y - 1));
-
-				 if (location.X - 1 >= 0 && location.Y <= 1 && location.X >= 4 && pieces[location.Y + 1, location.X - 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 1, location.Y + 1));
-
-				 if (location.X + 1 >= 0 && location.Y <= 1 && location.X <= 4 && pieces[location.Y + 1, location.X + 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 1, location.Y + 1));
-
-
-				 if (location.X - 1 >= 0 && location.Y >= 7 && location.X >= 4 && pieces[location.Y - 1, location.X - 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 1, location.Y - 1));
-
-				 if (location.X + 1 >= 0 && location.Y >= 7 && location.X <= 4 && pieces[location.Y - 1, location.X + 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 1, location.Y - 1));
-
-				 if (location.X - 1 >= 0 && location.Y + 1 <= 9 && location.Y >= 7 && location.X >= 4 && pieces[location.Y + 1, location.X - 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 1, location.Y + 1));
-
-				 if (location.X + 1 >= 0 && location.Y + 1 <= 9 && location.Y >= 7 && location.X <= 4 && pieces[location.Y + 1, location.X + 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 1, location.Y + 1));
-
-				 return moves;
-			 };
-
-			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves将 = (p, location, pieces) =>
-			 {
-				 List<IntPoint> moves = new List<IntPoint>();
-				 if (location.X >= 4 && pieces[location.Y, location.X - 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X - 1, location.Y));
-
-				 if (location.X <= 4 && pieces[location.Y, location.X + 1]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X + 1, location.Y));
-
-				 if (1 <= location.Y && location.Y <= 2 && pieces[location.Y - 1, location.X]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X, location.Y - 1));
-
-				 if (location.Y <= 1 && pieces[location.Y + 1, location.X]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X, location.Y + 1));
-
-				 //将吃将
-				 if (location.Y <= 2)
-				 {
-					 for (int y = location.Y + 1; y < 10; y++)
-					 {
-						 if (pieces[y, location.X] == null)
-							 continue;
-						 else if (pieces[y, location.X].Name == "将")
-						 {
-							 moves.Add(new IntPoint(location.X, y));
-						 }
-						 break;
-					 }
-				 }
-
-
-				 if (8 <= location.Y && pieces[location.Y - 1, location.X]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X, location.Y - 1));
-
-				 if (7 <= location.Y && location.Y <= 8 && pieces[location.Y + 1, location.X]?.Color != p.Color)
-					 moves.Add(new IntPoint(location.X, location.Y + 1));
-
-				 if (location.Y > 2)
-				 {
-					 for (int y = location.Y - 1; y >= 0; y--)
-					 {
-						 if (pieces[y, location.X] == null)
-							 continue;
-						 else if (pieces[y, location.X].Name == "将")
-						 {
-							 moves.Add(new IntPoint(location.X, y));
-						 }
-						 break;
-					 }
-				 }
-
-				 return moves;
-			 };
-
-			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves炮 = (p, location, pieces) =>
-			 {
-				 List<IntPoint> moves = new List<IntPoint>();
-				 for (int x = location.X - 1; x >= 0; x--)
-				 {
-					 if (pieces[location.Y, x] == null)
-						 moves.Add(new IntPoint(x, location.Y));
-					 else
-					 {   //吃子
-						 for (int xx = x - 1; xx >= 0; xx--)
-						 {
-							 if (pieces[location.Y, xx] != null && pieces[location.Y, xx].Color != p.Color)
-							 {
-								 moves.Add(new IntPoint(xx, location.Y));
-								 break;
-							 }
-						 }
-						 break;
-					 }
-				 }
-
-				 for (int x = location.X + 1; x < 9; x++)
-				 {
-					 if (pieces[location.Y, x] == null)
-						 moves.Add(new IntPoint(x, location.Y));
-					 else
-					 {   //吃子
-						 for (int xx = x + 1; xx < 9; xx++)
-						 {
-							 if (pieces[location.Y, xx] != null && pieces[location.Y, xx].Color != p.Color)
-							 {
-								 moves.Add(new IntPoint(xx, location.Y));
-								 break;
-							 }
-						 }
-						 break;
-					 }
-				 }
-
-				 for (int y = location.Y - 1; y >= 0; y--)
-				 {
-					 if (pieces[y, location.X] == null)
-						 moves.Add(new IntPoint(location.X, y));
-					 else
-					 {
-						 for (int yy = y - 1; yy >= 0; yy--)
-						 {
-							 if (pieces[yy, location.X] != null && pieces[yy, location.X].Color != p.Color)
-							 {
-								 moves.Add(new IntPoint(location.X, yy));
-								 break;
-							 }
-						 }
-						 break;
-					 }
-				 }
-
-				 for (int y = location.Y + 1; y < 10; y++)
-				 {
-					 if (pieces[y, location.X] == null)
-						 moves.Add(new IntPoint(location.X, y));
-					 else
-					 {
-						 for (int yy = y + 1; yy < 10; yy++)
-						 {
-							 if (pieces[yy, location.X] != null && pieces[yy, location.X].Color != p.Color)
-							 {
-								 moves.Add(new IntPoint(location.X, yy));
-								 break;
-							 }
-						 }
-						 break;
-					 }
-				 }
-				 return moves;
-			 };
-
-			Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> moves兵 = (p, location, pieces) =>
-			 {
-				 List<IntPoint> moves = new List<IntPoint>();
-				 var jiangLocation = CoordinatesOf(pieces, jiang => jiang.Name == "将" && jiang.Color == p.Color);
-				 if (jiangLocation.Y <= 4)
-				 {
-					 if (pieces[location.Y + 1, location.X]?.Color != p.Color)
-						 moves.Add(new IntPoint(location.X, location.Y + 1));
-					 if (location.Y > 4) //如果过河了，就可以左右移动
-					 {
-						 if (location.X >= 1 && pieces[location.Y, location.X - 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 1, location.Y));
-
-						 if (location.X <= 7 && pieces[location.Y, location.X + 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 1, location.Y));
-					 }
-				 }
-				 else
-				 {
-					 if (pieces[location.Y - 1, location.X]?.Color != p.Color)
-						 moves.Add(new IntPoint(location.X, location.Y - 1));
-					 if (location.Y <= 4) //如果过河了，就可以左右移动
-					 {
-						 if (location.X >= 1 && pieces[location.Y, location.X - 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X - 1, location.Y));
-
-						 if (location.X <= 7 && pieces[location.Y, location.X + 1]?.Color != p.Color)
-							 moves.Add(new IntPoint(location.X + 1, location.Y));
-					 }
-				 }
-				 return moves;
-
-			 };
-
-			pieces[0, 0] = new Piece(moves车) { Name = "车", Color = ChessColor.Black };
-			pieces[0, 1] = new Piece(moves马) { Name = "马", Color = ChessColor.Black };
-			pieces[0, 2] = new Piece(moves象) { Name = "象", Color = ChessColor.Black };
-			pieces[0, 3] = new Piece(moves士) { Name = "士", Color = ChessColor.Black };
-			pieces[0, 4] = new Piece(moves将) { Name = "将", Color = ChessColor.Black };
-			pieces[0, 5] = new Piece(moves士) { Name = "士", Color = ChessColor.Black };
-			pieces[0, 6] = new Piece(moves象) { Name = "象", Color = ChessColor.Black };
-			pieces[0, 7] = new Piece(moves马) { Name = "马", Color = ChessColor.Black };
-			pieces[0, 8] = new Piece(moves车) { Name = "车", Color = ChessColor.Black };
-
-			pieces[2, 1] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Black };
-			pieces[2, 7] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Black };
-
-			pieces[3, 0] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
-			pieces[3, 2] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
-			pieces[3, 4] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
-			pieces[3, 6] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
-			pieces[3, 8] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
-
-			pieces[9, 0] = new Piece(moves车) { Name = "车", Color = ChessColor.Red };
-			pieces[9, 1] = new Piece(moves马) { Name = "马", Color = ChessColor.Red };
-			pieces[9, 2] = new Piece(moves象) { Name = "象", Color = ChessColor.Red };
-			pieces[9, 3] = new Piece(moves士) { Name = "士", Color = ChessColor.Red };
-			pieces[9, 4] = new Piece(moves将) { Name = "将", Color = ChessColor.Red };
-			pieces[9, 5] = new Piece(moves士) { Name = "士", Color = ChessColor.Red };
-			pieces[9, 6] = new Piece(moves象) { Name = "象", Color = ChessColor.Red };
-			pieces[9, 7] = new Piece(moves马) { Name = "马", Color = ChessColor.Red };
-			pieces[9, 8] = new Piece(moves车) { Name = "车", Color = ChessColor.Red };
-
-			pieces[7, 1] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
-			pieces[7, 7] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
-
-			pieces[6, 0] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
-			pieces[6, 2] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
-			pieces[6, 4] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
-			pieces[6, 6] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
-			pieces[6, 8] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
-
+			pieces = new Board();
 			UpdateBoard();
 		}
 
@@ -433,13 +62,10 @@ namespace 中国象棋
 				}
 			}
 
-			var termination = IsTerminated(pieces);
+			var termination = IsWin(pieces, isRedTurn ? ChessColor.Red : ChessColor.Black);
 			if (termination.HasValue)
 			{
-				if (termination.Value)
-					MessageBox.Show("红胜了");
-				else
-					MessageBox.Show("黑胜了");
+				MessageBox.Show((isRedTurn ? "红" : "黑") + (termination.Value ? "胜" : "负") + "了");
 
 				board.IsEnabled = false;
 				return;
@@ -510,12 +136,12 @@ namespace 中国象棋
 			int x = Grid.GetColumn((UIElement)button.Parent);
 			int y = Grid.GetRow((UIElement)button.Parent);
 
-			pieces[y, x] = pieces[pieceLocation.Y, pieceLocation.X];
-			pieces[pieceLocation.Y, pieceLocation.X] = null;
+			pieces = pieces.Move(pieceLocation, new IntPoint(x, y), out _);
 
 			isRedTurn = !isRedTurn;
 			UpdateBoard();
 		}
+
 
 		public static IntPoint CoordinatesOf<T>(T[,] matrix, Predicate<T> p)
 		{
@@ -526,7 +152,7 @@ namespace 中国象棋
 			{
 				for (int y = 0; y < h; ++y)
 				{
-					if (matrix[x, y]!=null && p(matrix[x, y]))
+					if (matrix[x, y] != null && p(matrix[x, y]))
 						return new IntPoint(y, x);
 				}
 			}
@@ -534,19 +160,32 @@ namespace 中国象棋
 			return new IntPoint(-1, -1);
 		}
 
+
+
 		/// <summary>
-		/// 如果红胜，返回true；如果黑胜，返回false；如果没有胜负，返回null。
+		/// 如果指定的颜色胜，返回true；如果指定的颜色负，返回false；如果没有胜负，返回null。
 		/// </summary>
 		/// <param name="pieces"></param>
 		/// <returns></returns>
-		public static bool? IsTerminated(Piece[,] pieces)
+		public static bool? IsWin(Board pieces, ChessColor color)
 		{
-			if (CoordinatesOf(pieces, p => p.Name == "将" && p.Color == ChessColor.Black).X==-1)
-				return true;
-
-			if (CoordinatesOf(pieces, p => p.Name == "将" && p.Color == ChessColor.Red).X == -1)
-				return false;
-
+			switch (color)
+			{
+				case ChessColor.Black:
+					if (pieces.RedJiangLocation.X == -1)
+						return true;
+					else if (pieces.BlackJiangLocation.X == -1)
+						return false;
+					break;
+				case ChessColor.Red:
+					if (pieces.BlackJiangLocation.X == -1)
+						return true;
+					else if (pieces.RedJiangLocation.X == -1)
+						return false;
+					break;
+				default:
+					break;
+			}
 			return null;
 		}
 	}

@@ -13,9 +13,11 @@ namespace 中国象棋
 
 		public ChessColor Color { get; set; }
 
-		private Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> getPossibleMovements;
+		public bool CanCrossRiver { get; set; } = true;
 
-		public Piece(Func<Piece, IntPoint, Piece[,], IEnumerable<IntPoint>> getPossibleMovements)
+		private Func<Piece, IntPoint, Board, IEnumerable<IntPoint>> getPossibleMovements;
+
+		public Piece(Func<Piece, IntPoint, Board, IEnumerable<IntPoint>> getPossibleMovements)
 		{
 			this.getPossibleMovements = getPossibleMovements;
 		}
@@ -26,7 +28,7 @@ namespace 中国象棋
 		/// <param name="location">本棋子的位置</param>
 		/// <param name="piecesOnBoard"></param>
 		/// <returns></returns>
-		public IEnumerable<IntPoint> GetPossibleMovements(IntPoint location, Piece[,] piecesOnBoard)
+		public virtual IEnumerable<IntPoint> GetPossibleMovements(IntPoint location, Board piecesOnBoard)
 		{
 			return getPossibleMovements(this, location, piecesOnBoard);
 		}
