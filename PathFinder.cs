@@ -34,6 +34,9 @@ namespace 中国象棋
 		/// <returns></returns>
 		public static int FindMovesCountToJiang(Piece piece, IntPoint location, Board board)
 		{
+			if (piece.Name == "士" || piece.Name == "象")
+				return int.MaxValue;
+
 			var openList = new PriorityQueue<SearchState>((a, b) => a.F.CompareTo(b.F), 9 * 10);
 			openList.Enqueue(new SearchState { Location = location, G = 0, Board = board });
 
