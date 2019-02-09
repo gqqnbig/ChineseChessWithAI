@@ -34,25 +34,28 @@ namespace 中国象棋
 		/// <returns></returns>
 		public static int FindMovesCountToJiang(Piece piece, IntPoint location, Board board)
 		{
-			var openList = new PriorityQueue<SearchState>((a, b) => b.G - a.G);
+			var openList = new PriorityQueue<SearchState>((a, b) => a.F.CompareTo(b.F), 9 * 10);
 			openList.Enqueue(new SearchState { Location = location, G = 0, Board = board });
 
-			var closedList = new HashSet<SearchState>();
+			var closedList = new HashSet<Board>();
 
 			while (openList.Count > 0)
 			{
 				var searchState = openList.Dequeue();
-				closedList.Add(searchState);
+				closedList.Add(searchState.Board);
 
 				if (MainWindow.IsWin(searchState.Board, searchState.TargetPiece.Color).GetValueOrDefault(false))
 					return searchState.G;
 
+				//不可扩展点
+				if (CanBeEaten(searchState.Location, searchState.Board))
+					continue;
+
 				foreach (var movement in searchState.TargetPiece.GetPossibleMovements(searchState.Location, searchState.Board))
 				{
-					var nextBoard = board.Move(location, movement, out _);
-					var s = new SearchState { Location = movement, Board = nextBoard, G = searchState.G + 1 };
-					if (closedList.Contains(s)==false && CanBeEaten(movement, nextBoard) == false)
-						openList.Enqueue(s);
+					var nextBoard = searchState.Board.Move(searchState.Location, movement, out _);
+					if (closedList.Contains(nextBoard) == false)
+						openList.Enqueue(new SearchState { Location = movement, Board = nextBoard, G = searchState.G + 1 });
 				}
 			}
 
@@ -63,20 +66,75 @@ namespace 中国象棋
 
 		class SearchState
 		{
+			public SearchState Parent { get; set; }
+
 			public IntPoint Location { get; set; }
-			public int H => HeuristicToJiang(Location, Board.GetMyJiangLocation(TargetPiece.Color));
+			public float H
+			{
+				get
+				{
+					var jiang = Board.GetOppositeJiangLocation(TargetPiece.Color);
+					if (jiang.X == -1)
+						return 0;
+					switch (TargetPiece.Name)
+					{
+						case "车":
+						case "炮":
+							if (Location.X != jiang.X && Location.Y != jiang.Y)
+								return 2;
+							else
+								return 1;
+						case "马":
+							//https://stackoverflow.com/a/41704071/746461
+							//answered Jan 17 '17 at 18:08
+							//Anthor: simon
+
+							int dx = Math.Abs(Location.X - jiang.X);
+							int dy = Math.Abs(Location.Y - jiang.Y);
+
+							if (dx < dy)
+							{
+								var t = dx;
+								dx = dy;
+								dy = t;
+							}
+
+							if (dx == 1 && dy == 0)
+								return 3;
+							if (dx == 2 && dy == 2)
+								return 4;
+
+							var delta = dx - dy;
+							if (dy > delta)
+								return delta - 2 * (int)Math.Floor((delta - dy) / 3d);
+							else
+								return delta - 2 * (int)Math.Floor((delta - dy) / 4d);
+
+						case "兵":
+							return Math.Abs(Location.X - jiang.X) + Math.Abs(Location.Y - jiang.Y);
+
+						case "将":
+							if (Location.X == jiang.X)
+								return 1;
+							else
+								return float.PositiveInfinity;
+
+
+						default:
+							return float.PositiveInfinity;
+					}
+				}
+			}
 			public int G { get; set; }
-			public int F => H + G;
+
+			/// <summary>
+			/// F=G+H。类型是float，因为float有<see cref="float.PositiveInfinity"/>。
+			/// </summary>
+			public float F => H + G;
 
 			public Board Board { get; set; }
 
 			public Piece TargetPiece => Board[Location.Y, Location.X];
-
-
-			private static int HeuristicToJiang(IntPoint pieceLocation, IntPoint jiangLocation)
-			{
-				return Math.Abs(pieceLocation.X - jiangLocation.X) + Math.Abs(pieceLocation.Y - jiangLocation.Y);
-			}
 
 			public override int GetHashCode()
 			{
@@ -90,6 +148,11 @@ namespace 中国象棋
 					return false;
 
 				return Board.Equals(other.Board);
+			}
+
+			public override string ToString()
+			{
+				return $"G={G}, H={H}, F={G + H}";
 			}
 		}
 	}

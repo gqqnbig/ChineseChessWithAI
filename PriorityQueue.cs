@@ -21,8 +21,8 @@ namespace 中国象棋
 		private int _size;
 		private readonly Comparison<T> comparison;
 
-		public PriorityQueue(Comparison<T> comparison)
-			: this(16)
+		public PriorityQueue(Comparison<T> comparison, int capacity = 16)
+			: this(capacity)
 		{
 			this.comparison = comparison;
 		}

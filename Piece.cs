@@ -32,6 +32,11 @@ namespace 中国象棋
 		{
 			return getPossibleMovements(this, location, piecesOnBoard);
 		}
+
+		public override string ToString()
+		{
+			return (Color == ChessColor.Red ? "红" : "黑") + Name;
+		}
 	}
 
 	public enum ChessColor

@@ -74,17 +74,22 @@ namespace 中国象棋
 
 		private void Button_Unchecked(object sender, RoutedEventArgs e)
 		{
-			for (int i = board.Children.Count - 1; i >= 0; i--)
-			{
-				if (board.Children[i] is Border)
-					board.Children.RemoveAt(i);
-			}
+			UnhighlightPossibleMovements();
 		}
+
 
 		private void Button_Checked(object sender, RoutedEventArgs e)
 		{
 			ToggleButton button = (ToggleButton)sender;
+			//HighlightPossibleMovements(button);
 
+			int x = Grid.GetColumn(button);
+			int y = Grid.GetRow(button);
+			Console.WriteLine(PathFinder.FindMovesCountToJiang(pieces[y, x], new IntPoint(x, y), pieces));
+		}
+
+		private void HighlightPossibleMovements(ToggleButton button)
+		{
 			for (int i = board.Children.Count - 1; i >= 0; i--)
 			{
 				ToggleButton otherButton = board.Children[i] as ToggleButton;
@@ -126,7 +131,16 @@ namespace 中国象棋
 				Grid.SetRow(border, move.Y);
 				board.Children.Add(border);
 			}
+		}
 
+
+		private void UnhighlightPossibleMovements()
+		{
+			for (int i = board.Children.Count - 1; i >= 0; i--)
+			{
+				if (board.Children[i] is Border)
+					board.Children.RemoveAt(i);
+			}
 		}
 
 		private void MoveButton_Click(object sender, RoutedEventArgs e)
