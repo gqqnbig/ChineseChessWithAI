@@ -216,6 +216,20 @@ namespace 中国象棋
 				 if (location.Y <= 1 && pieces[location.Y + 1, location.X]?.Color != p.Color)
 					 moves.Add(new IntPoint(location.X, location.Y + 1));
 
+				 //将吃将
+				 if (location.Y <= 2)
+				 {
+					 for (int y = location.Y + 1; y < 10; y++)
+					 {
+						 if (pieces[y, location.X] == null)
+							 continue;
+						 else if (pieces[y, location.X].Name == "将")
+						 {
+							 moves.Add(new IntPoint(location.X, y));
+						 }
+						 break;
+					 }
+				 }
 
 
 				 if (8 <= location.Y && pieces[location.Y - 1, location.X]?.Color != p.Color)
@@ -223,6 +237,20 @@ namespace 中国象棋
 
 				 if (7 <= location.Y && location.Y <= 8 && pieces[location.Y + 1, location.X]?.Color != p.Color)
 					 moves.Add(new IntPoint(location.X, location.Y + 1));
+
+				 if (location.Y > 2)
+				 {
+					 for (int y = location.Y - 1; y >= 0; y--)
+					 {
+						 if (pieces[y, location.X] == null)
+							 continue;
+						 else if (pieces[y, location.X].Name == "将")
+						 {
+							 moves.Add(new IntPoint(location.X, y));
+						 }
+						 break;
+					 }
+				 }
 
 				 return moves;
 			 };
