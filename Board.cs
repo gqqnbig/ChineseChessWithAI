@@ -142,7 +142,7 @@ namespace 中国象棋
 					{
 						if (location.X - 1 >= 0 && pieces[location.Y - 2, location.X - 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 1, location.Y - 2));
-						if (location.X <= 8 && pieces[location.Y - 2, location.X + 1]?.Color != p.Color)
+						if (location.X < 8 && pieces[location.Y - 2, location.X + 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X + 1, location.Y - 2));
 					}
 				}
@@ -153,7 +153,7 @@ namespace 中国象棋
 					{
 						if (location.X - 1 >= 0 && pieces[location.Y + 2, location.X - 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 1, location.Y + 2));
-						if (location.X <= 8 && pieces[location.Y + 2, location.X + 1]?.Color != p.Color)
+						if (location.X < 8 && pieces[location.Y + 2, location.X + 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X + 1, location.Y + 2));
 					}
 				}
@@ -373,7 +373,7 @@ namespace 中国象棋
 				}
 				else
 				{
-					if (pieces[location.Y - 1, location.X]?.Color != p.Color)
+					if (location.Y >= 1 && pieces[location.Y - 1, location.X]?.Color != p.Color)
 						moves.Add(new IntPoint(location.X, location.Y - 1));
 					if (location.Y <= 4) //如果过河了，就可以左右移动
 					{
