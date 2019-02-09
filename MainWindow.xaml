@@ -5,56 +5,67 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:中国象棋"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded"> <!--Background="#ce5c00"-->
-    <Grid Name="board">
+        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+    <!--Background="#ce5c00"-->
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
             <ColumnDefinition/>
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
+        <Grid.RowDefinitions/>
+        
+        <Grid Name="board" Grid.Row="0" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition/>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
 
-        <Button Grid.Row="0" Grid.Column="0"  Content="hello" Foreground="Red"/>
-        <Rectangle StrokeThickness="2" StrokeDashArray="2,4">
-            <Rectangle.Stroke>
-                <SolidColorBrush Color="Red" />
-            </Rectangle.Stroke>
-        </Rectangle>
+            <Button Grid.Row="0" Grid.Column="0"  Content="hello" Foreground="Red"/>
+            <Rectangle StrokeThickness="2" StrokeDashArray="2,4">
+                <Rectangle.Stroke>
+                    <SolidColorBrush Color="Red" />
+                </Rectangle.Stroke>
+            </Rectangle>
 
-        <Border Grid.Row="0" Grid.Column="1" >
-            <Border.BorderBrush>
-                <VisualBrush>
-                    <VisualBrush.Visual>
-                        <Rectangle StrokeDashArray="4 2"
+            <Border Grid.Row="0" Grid.Column="1" >
+                <Border.BorderBrush>
+                    <VisualBrush>
+                        <VisualBrush.Visual>
+                            <Rectangle StrokeDashArray="4 2"
                       Stroke="Red"
                       StrokeThickness="2"
                       RadiusX="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=CornerRadius.TopRight}"
                       RadiusY="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=CornerRadius.BottomLeft}"
                       Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualWidth}"
                       Height="{Binding RelativeSource={RelativeSource AncestorType={x:Type Border}}, Path=ActualHeight}"/>
-                    </VisualBrush.Visual>
-                </VisualBrush>
-            </Border.BorderBrush>
-            <Button>test</Button>
-        </Border>
-        
-        
+                        </VisualBrush.Visual>
+                    </VisualBrush>
+                </Border.BorderBrush>
+                <Button>test</Button>
+            </Border>
+
+
+        </Grid>
+
+        <Button Grid.Row="0" Grid.Column="1" Content="输出最短路径"/>
     </Grid>
 </Window>

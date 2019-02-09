@@ -438,7 +438,70 @@ namespace 中国象棋
 		}
 
 
+		public IntPoint GetMyJiangLocation(ChessColor color)
+		{
+			if (color == ChessColor.Red)
+				return RedJiangLocation;
+			else
+				return BlackJiangLocation;
+		}
 
+		public IntPoint GetOppositeJiangLocation(ChessColor color)
+		{
+			if (color == ChessColor.Black)
+				return RedJiangLocation;
+			else
+				return BlackJiangLocation;
+		}
+
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as Board;
+
+			for (int x = 0; x < 9; x++)
+			{
+				for (int y = 0; y < 10; y++)
+				{
+					if (board[y, x] != null && other.board[y, x] != null)
+					{
+						if (board[y, x].Name == other.board[y, x].Name &&
+							board[y, x].Color == other.board[y, x].Color)
+							continue;
+						else
+							return false;
+					}
+					else if (board[y, x] == null && other.board[y, x] == null)
+						continue;
+					else
+						return false;
+				}
+			}
+
+			return true;
+		}
+
+		int? hashcode;
+
+		public override int GetHashCode()
+		{
+			if (hashcode == null)
+			{
+				hashcode = 0;
+				for (int x = 0; x < 9; x++)
+				{
+					for (int y = 0; y < 10; y++)
+					{
+						if (board[y, x] != null)
+						{
+							hashcode = hashcode ^ board[y, x].Name.GetHashCode();
+							hashcode = hashcode ^ board[y, x].Color.GetHashCode();
+						}
+					}
+				}
+			}
+			return hashcode.Value;
+		}
 
 		private static IntPoint CoordinatesOf<T>(T[,] matrix, Predicate<T> p)
 		{

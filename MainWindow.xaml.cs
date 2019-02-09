@@ -169,23 +169,12 @@ namespace 中国象棋
 		/// <returns></returns>
 		public static bool? IsWin(Board pieces, ChessColor color)
 		{
-			switch (color)
-			{
-				case ChessColor.Black:
-					if (pieces.RedJiangLocation.X == -1)
-						return true;
-					else if (pieces.BlackJiangLocation.X == -1)
-						return false;
-					break;
-				case ChessColor.Red:
-					if (pieces.BlackJiangLocation.X == -1)
-						return true;
-					else if (pieces.RedJiangLocation.X == -1)
-						return false;
-					break;
-				default:
-					break;
-			}
+			if (pieces.GetOppositeJiangLocation(color).X == -1)
+				return true;
+
+			if (pieces.GetMyJiangLocation(color).X == -1)
+				return false;
+
 			return null;
 		}
 	}
