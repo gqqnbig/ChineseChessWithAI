@@ -50,15 +50,13 @@ namespace 中国象棋
 				if (MainWindow.IsWin(searchState.Board, searchState.TargetPiece.Color).GetValueOrDefault(false))
 					return searchState.G;
 
-				//不可扩展点
-				if (CanBeEaten(searchState.Location, searchState.Board))
-					continue;
+
 
 				foreach (var movement in searchState.TargetPiece.GetPossibleMovements(searchState.Location, searchState.Board))
 				{
 					var nextBoard = searchState.Board.Move(searchState.Location, movement, out _);
-					if (closedList.Contains(nextBoard) == false)
-						openList.Enqueue(new SearchState { Location = movement, Board = nextBoard, G = searchState.G + 1 });
+					if (CanBeEaten(movement, nextBoard) == false && closedList.Contains(nextBoard) == false)
+						openList.Enqueue(new SearchState { Location = movement, Board = nextBoard, G = searchState.G + 1, });
 				}
 			}
 
