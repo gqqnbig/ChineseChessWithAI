@@ -66,6 +66,6 @@
 
         </Grid>
 
-        <Button Grid.Row="0" Grid.Column="1" Content="输出最短路径"/>
+        <Button Grid.Row="0" Grid.Column="1" Content="评估局面" Click="TestButton_Click"/>
     </Grid>
 </Window>

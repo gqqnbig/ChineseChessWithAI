@@ -15,9 +15,9 @@ namespace 中国象棋
 
 		public bool CanCrossRiver { get; set; } = true;
 
-		private Func<Piece, IntPoint, Board, IEnumerable<IntPoint>> getPossibleMovements;
+		private Func<Piece, IntPoint, Board, IEnumerable<Move>> getPossibleMovements;
 
-		public Piece(Func<Piece, IntPoint, Board, IEnumerable<IntPoint>> getPossibleMovements)
+		public Piece(Func<Piece, IntPoint, Board, IEnumerable<Move>> getPossibleMovements)
 		{
 			this.getPossibleMovements = getPossibleMovements;
 		}
@@ -28,7 +28,7 @@ namespace 中国象棋
 		/// <param name="location">本棋子的位置</param>
 		/// <param name="piecesOnBoard"></param>
 		/// <returns></returns>
-		public virtual IEnumerable<IntPoint> GetPossibleMovements(IntPoint location, Board piecesOnBoard)
+		public virtual IEnumerable<Move> GetPossibleMovements(IntPoint location, Board piecesOnBoard)
 		{
 			return getPossibleMovements(this, location, piecesOnBoard);
 		}

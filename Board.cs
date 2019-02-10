@@ -392,9 +392,96 @@ namespace 中国象棋
 			}
 		}
 
-		private Board(Piece[,] board)
+
+		private ulong redXEqualityRepresentation = 0;
+		private ulong redYEqualityRepresentation = 0;
+		private ulong blackXEqualityRepresentation = 0;
+		private ulong blackYEqualityRepresentation = 0;
+
+		private void InitilizeEqualityRepresentation()
+		{
+			Dictionary<string, int> redEqualityMapping = new Dictionary<string, int>()
+			{
+				["车"] = 0,
+				["马"] = 2,
+				["炮"] = 4,
+				["象"] = 6,
+				["士"] = 8,
+				["兵"] = 10,
+				["将"] = 15,
+			};
+
+			Dictionary<string, int> blackEqualityMapping = new Dictionary<string, int>()
+			{
+				["车"] = 0,
+				["马"] = 2,
+				["炮"] = 4,
+				["象"] = 6,
+				["士"] = 8,
+				["兵"] = 10,
+				["将"] = 15,
+			};
+
+
+			for (int x = 0; x < 9; x++)
+			{
+				for (int y = 0; y < 10; y++)
+				{
+					if (board[y, x] != null)
+					{
+						if (board[y, x].Color == ChessColor.Red)
+						{
+							//11进制
+							redXEqualityRepresentation += (ulong)((x + 1) * Math.Pow(11, redEqualityMapping[board[y, x].Name]));
+							redYEqualityRepresentation += (ulong)((y + 1) * Math.Pow(11, redEqualityMapping[board[y, x].Name]));
+							redEqualityMapping[board[y, x].Name]++;
+						}
+						else
+						{
+							blackXEqualityRepresentation += (ulong)((x + 1) * Math.Pow(11, blackEqualityMapping[board[y, x].Name]));
+							blackYEqualityRepresentation += (ulong)((y + 1) * Math.Pow(11, blackEqualityMapping[board[y, x].Name]));
+							blackEqualityMapping[board[y, x].Name]++;
+						}
+					}
+				}
+			}
+		}
+
+		private static readonly char[] BaseChars =
+			"0123456789A".ToCharArray();
+		private static readonly Dictionary<char, int> CharValues = BaseChars
+																   .Select((c, i) => new { Char = c, Index = i })
+																   .ToDictionary(c => c.Char, c => c.Index);
+
+		public static string LongToBase(ulong value)
+		{
+			ulong targetBase = (ulong)BaseChars.Length;
+			// Determine exact number of characters to use.
+			char[] buffer = new char[Math.Max(
+											  (int)Math.Ceiling(Math.Log(value + 1, targetBase)), 1)];
+
+			var i = buffer.Length;
+			do
+			{
+				buffer[--i] = BaseChars[value % targetBase];
+				value = value / targetBase;
+			}
+			while (value > 0);
+
+			return new string(buffer, i, buffer.Length - i);
+		}
+
+
+		protected Board(Piece[,] board)
 		{
 			this.board = board;
+
+			InitilizeEqualityRepresentation();
+		}
+
+		public Board(Board board)
+		{
+			this.board = (Piece[,])board.board.Clone();
 		}
 
 		/// <summary>
@@ -418,7 +505,7 @@ namespace 中国象棋
 
 			board[3, 0] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 			board[3, 2] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
-			board[3, 4] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
+			//board[3, 4] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 			board[3, 6] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 			board[3, 8] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 
@@ -432,7 +519,7 @@ namespace 中国象棋
 			board[9, 7] = new Piece(moves马) { Name = "马", Color = ChessColor.Red };
 			board[9, 8] = new Piece(moves车) { Name = "车", Color = ChessColor.Red };
 
-			board[7, 1] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
+			board[3, 4] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
 			board[7, 7] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
 
 			board[6, 0] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
@@ -440,6 +527,9 @@ namespace 中国象棋
 			board[6, 4] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
 			board[6, 6] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
 			board[6, 8] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
+
+
+			InitilizeEqualityRepresentation();
 		}
 
 		/// <summary>
@@ -493,17 +583,23 @@ namespace 中国象棋
 		}
 
 
-		public Board Move(IntPoint location, IntPoint targetLocation, out Piece eatenPiece)
+		public virtual Board Move(IntPoint location, IntPoint targetLocation, out Piece eatenPiece)
 		{
-			Debug.Assert(board[location.Y, location.X] != null, $"想要从({location.X},{location.Y})走子，但该位置没有棋子。");
+			var newBoard = MoveCore(location, targetLocation, out eatenPiece);
+
+			return new Board(newBoard);
+		}
+
+		protected Piece[,] MoveCore(IntPoint startLocation, IntPoint targetLocation, out Piece eatenPiece)
+		{
+			Debug.Assert(board[startLocation.Y, startLocation.X] != null, $"想要从({startLocation.X},{startLocation.Y})走子，但该位置没有棋子。");
 
 			var newBoard = (Piece[,])board.Clone();
 			eatenPiece = newBoard[targetLocation.Y, targetLocation.X];
 
-			newBoard[targetLocation.Y, targetLocation.X] = newBoard[location.Y, location.X];
-			newBoard[location.Y, location.X] = null;
-
-			return new Board(newBoard);
+			newBoard[targetLocation.Y, targetLocation.X] = newBoard[startLocation.Y, startLocation.X];
+			newBoard[startLocation.Y, startLocation.X] = null;
+			return newBoard;
 		}
 
 
@@ -528,50 +624,77 @@ namespace 中国象棋
 		{
 			var other = obj as Board;
 
-			for (int x = 0; x < 9; x++)
-			{
-				for (int y = 0; y < 10; y++)
-				{
-					if (board[y, x] != null && other.board[y, x] != null)
-					{
-						if (board[y, x].Name == other.board[y, x].Name &&
-							board[y, x].Color == other.board[y, x].Color)
-							continue;
-						else
-							return false;
-					}
-					else if (board[y, x] == null && other.board[y, x] == null)
-						continue;
-					else
-						return false;
-				}
-			}
+			if (other == null)
+				return false;
 
-			return true;
+
+
+			bool r = redXEqualityRepresentation == other.redXEqualityRepresentation &&
+					redYEqualityRepresentation == other.redYEqualityRepresentation &&
+					blackXEqualityRepresentation == other.blackXEqualityRepresentation &&
+					blackYEqualityRepresentation == other.blackYEqualityRepresentation;
+
+
+			//bool b = OldEquals(other);
+
+			//Debug.Assert(r == b, "新旧方法结果不同！");
+
+			return r;
 		}
 
-		int? hashcode;
+		//private bool OldEquals(Board other)
+		//{
+		//	for (int x = 0; x < 9; x++)
+		//	{
+		//		for (int y = 0; y < 10; y++)
+		//		{
+		//			if (board[y, x] != null && other.board[y, x] != null)
+		//			{
+		//				if (board[y, x].Name == other.board[y, x].Name &&
+		//					board[y, x].Color == other.board[y, x].Color)
+		//					continue;
+		//				else
+		//					return false;
+		//			}
+		//			else if (board[y, x] == null && other.board[y, x] == null)
+		//				continue;
+		//			else
+		//				return false;
+		//		}
+		//	}
+
+		//	return true;
+		//}
+
 
 		public override int GetHashCode()
 		{
-			if (hashcode == null)
+			unchecked
 			{
-				hashcode = 0;
-				for (int x = 0; x < 9; x++)
-				{
-					for (int y = 0; y < 10; y++)
-					{
-						if (board[y, x] != null)
-						{
-							hashcode = hashcode ^ x;
-							hashcode = hashcode ^ y;
-							hashcode = hashcode ^ board[y, x].Name.GetHashCode();
-							hashcode = hashcode ^ board[y, x].Color.GetHashCode();
-						}
-					}
-				}
+				int hash = 0;
+
+				//uint.MaxValue 的二进制全是1。
+				int low32 = (int)(redXEqualityRepresentation & uint.MaxValue);
+				int high32 = (int)(redXEqualityRepresentation >> 32);
+
+				hash = low32 ^ high32;
+
+				low32 = (int)(redYEqualityRepresentation & uint.MaxValue);
+				high32 = (int)(redYEqualityRepresentation >> 32);
+
+				hash = hash ^ low32 ^ high32;
+
+				low32 = (int)(blackXEqualityRepresentation & uint.MaxValue);
+				high32 = (int)(blackXEqualityRepresentation >> 32);
+
+				hash = hash ^ low32 ^ high32;
+
+				low32 = (int)(blackYEqualityRepresentation & uint.MaxValue);
+				high32 = (int)(blackYEqualityRepresentation >> 32);
+
+				hash = hash ^ low32 ^ high32;
+				return hash;
 			}
-			return hashcode.Value;
 		}
 
 		private static IntPoint CoordinatesOf<T>(T[,] matrix, Predicate<T> p)
@@ -594,6 +717,7 @@ namespace 中国象棋
 
 		public int Count => throw new NotImplementedException();
 
+
 		public IEnumerator<Piece> GetEnumerator()
 		{
 			throw new NotImplementedException();
@@ -604,8 +728,9 @@ namespace 中国象棋
 			throw new NotImplementedException();
 		}
 
-		public void PrintPretty()
+		public string Print()
 		{
+			StringBuilder sb=new StringBuilder();
 			for (int y = 0; y < Height; y++)
 			{
 				for (int x = 0; x < Width; x++)
@@ -627,6 +752,33 @@ namespace 中国象棋
 			return sb.ToString().TrimEnd();
 
 		}
+
+	}
+
+
+	public struct Move
+	{
+		//public Move()
+		//{
+		//	Target = new IntPoint(-1, -1);
+		//	IsEat = true;
+		//}
+
+		public Move(IntPoint target, bool isEat = true, bool isProtecting = false)
+		{
+			Target = target;
+			IsEat = isEat;
+			IsProtecting = isProtecting;
+		}
+
+		public IntPoint Target { get; set; }
+
+		/// <summary>
+		/// 这个走步是否可以吃子
+		/// </summary>
+		public bool IsEat { get; set; }
+
+		public bool IsProtecting { get; set; }
 
 	}
 }

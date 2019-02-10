@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -99,6 +100,7 @@ namespace 中国象棋
 
 		public int Count => _size;
 
+		[Pure]
 		public T Peek()
 		{
 			if (_size == 0)

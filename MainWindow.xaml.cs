@@ -81,7 +81,7 @@ namespace 中国象棋
 		private void Button_Checked(object sender, RoutedEventArgs e)
 		{
 			ToggleButton button = (ToggleButton)sender;
-			//HighlightPossibleMovements(button);
+			HighlightPossibleMovements(button);
 
 			int x = Grid.GetColumn(button);
 			int y = Grid.GetRow(button);
@@ -106,6 +106,9 @@ namespace 中国象棋
 
 			foreach (var move in moves)
 			{
+				if(move.IsProtecting)
+					continue;
+
 				Border border = new Border();
 				border.BorderThickness = new Thickness(2);
 				Rectangle rect = new Rectangle() { Stroke = Brushes.OrangeRed, StrokeThickness = 2, StrokeDashArray = new DoubleCollection() { 2, 4 } };
@@ -127,8 +130,8 @@ namespace 中国象棋
 
 				Panel.SetZIndex(border, 2);
 
-				Grid.SetColumn(border, move.X);
-				Grid.SetRow(border, move.Y);
+				Grid.SetColumn(border, move.Target.X);
+				Grid.SetRow(border, move.Target.Y);
 				board.Children.Add(border);
 			}
 		}
@@ -190,6 +193,12 @@ namespace 中国象棋
 				return false;
 
 			return null;
+		}
+
+		private void TestButton_Click(object sender, RoutedEventArgs e)
+		{
+			AI ai = new AI();
+			ai.EvaluateBoard(pieces, isRedTurn ? ChessColor.Red : ChessColor.Black);
 		}
 	}
 }
