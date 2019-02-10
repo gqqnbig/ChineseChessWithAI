@@ -432,9 +432,9 @@ namespace 中国象棋
 			Debug.Assert(board[location.Y, location.X] != null, $"想要从({location.X},{location.Y})走子，但该位置没有棋子。");
 
 			var newBoard = (Piece[,])board.Clone();
-			newBoard[targetLocation.Y, targetLocation.X] = newBoard[location.Y, location.X];
+			eatenPiece = newBoard[targetLocation.Y, targetLocation.X];
 
-			eatenPiece = newBoard[location.Y, location.X];
+			newBoard[targetLocation.Y, targetLocation.X] = newBoard[location.Y, location.X];
 			newBoard[location.Y, location.X] = null;
 
 			return new Board(newBoard);
