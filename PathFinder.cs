@@ -33,7 +33,7 @@ namespace 中国象棋
 			var openList = new PriorityQueue<SearchState>((a, b) => a.F.CompareTo(b.F), 9 * 10);
 			openList.Enqueue(new SearchState { Location = location, G = 0, Board = board });
 
-			var closedList = new HashSet<Board>();
+			var closedList = new HashSet<SearchState>();
 
 			var expandedNodes = 0;
 			while (openList.Count > 0)
@@ -42,12 +42,12 @@ namespace 中国象棋
 
 				_ = searchState.H;
 
-				closedList.Add(searchState.Board);
+				closedList.Add(searchState);
 
 				if (MainWindow.IsWin(searchState.Board, searchState.TargetPiece.Color).GetValueOrDefault(false))
 				{
 					sw.Stop();
-					Debug.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
+					Trace.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
 					return searchState.G;
 				}
 
@@ -60,14 +60,19 @@ namespace 中国象棋
 					BoardEncoded nextBoard = (BoardEncoded)searchState.Board.Move(searchState.Location, movement.Target, out _);
 					if (nextBoard.CanBeEaten(movement.Target) == false)
 					{
-						if (closedList.Contains(nextBoard) == false)
-							openList.Enqueue(new SearchState { Location = movement.Target, Board = nextBoard, G = searchState.G + 1 });
+						var s = new SearchState { Location = movement.Target, Board = nextBoard, G = searchState.G + 1, Parent = searchState };
+						if (closedList.TryGetValue(s, out var @as) == false)
+							openList.Enqueue(s);
+						else
+						{
+							Trace.Assert(s.G > @as.G);
+						}
 					}
 				}
 			}
 
 			sw.Stop();
-			Debug.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
+			Trace.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
 			return int.MaxValue;
 		}
 
