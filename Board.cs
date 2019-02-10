@@ -8,15 +8,12 @@ namespace 中国象棋
 {
 	public class Board : IReadOnlyCollection<Piece>
 	{
+		public const int Width = 9;
+		public const int Height = 10;
+
 		readonly Piece[,] board;
 
-		public Piece this[int y, int x]
-		{
-			get
-			{
-				return board[y, x];
-			}
-		}
+		public Piece this[int y, int x] => board[y, x];
 
 		IntPoint? redJiangLocation;
 		public IntPoint RedJiangLocation
@@ -536,6 +533,27 @@ namespace 中国象棋
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			throw new NotImplementedException();
+		}
+
+		public void PrintPretty()
+		{
+			for (int y = 0; y < Height; y++)
+			{
+				for (int x = 0; x < Width; x++)
+				{
+					if (this[y, x] == null)
+						Console.Write("＋");
+					else
+					{
+						var backup = Console.ForegroundColor;
+						Console.ForegroundColor = this[y, x].Color == ChessColor.Red ? ConsoleColor.Red : ConsoleColor.Black;
+						Console.Write(this[y,x].Name);
+						Console.ForegroundColor = backup;
+					}
+				}
+				Console.WriteLine();
+			}
+
 		}
 
 	}
