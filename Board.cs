@@ -354,12 +354,12 @@ namespace 中国象棋
 			Func<Piece, IntPoint, Board, IEnumerable<IntPoint>> moves兵 = (p, location, pieces) =>
 			{
 				List<IntPoint> moves = new List<IntPoint>();
-				var jiangLocation = p.Color == ChessColor.Red ? pieces.RedJiangLocation : pieces.BlackJiangLocation;
+				var jiangLocation = pieces.GetOppositeJiangLocation(p.Color);
 				if (jiangLocation.Y <= 4)
 				{
-					if (pieces[location.Y + 1, location.X]?.Color != p.Color)
-						moves.Add(new IntPoint(location.X, location.Y + 1));
-					if (location.Y > 4) //如果过河了，就可以左右移动
+					if (location.Y - 1 >= 0 && pieces[location.Y + 1, location.X]?.Color != p.Color)
+						moves.Add(new IntPoint(location.X, location.Y - 1));
+					if (location.Y <= 4) //如果过河了，就可以左右移动
 					{
 						if (location.X >= 1 && pieces[location.Y, location.X - 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 1, location.Y));
@@ -370,9 +370,9 @@ namespace 中国象棋
 				}
 				else
 				{
-					if (location.Y >= 1 && pieces[location.Y - 1, location.X]?.Color != p.Color)
-						moves.Add(new IntPoint(location.X, location.Y - 1));
-					if (location.Y <= 4) //如果过河了，就可以左右移动
+					if (location.Y + 1 < Height && pieces[location.Y + 1, location.X]?.Color != p.Color)
+						moves.Add(new IntPoint(location.X, location.Y + 1));
+					if (location.Y > 4) //如果过河了，就可以左右移动
 					{
 						if (location.X >= 1 && pieces[location.Y, location.X - 1]?.Color != p.Color)
 							moves.Add(new IntPoint(location.X - 1, location.Y));
