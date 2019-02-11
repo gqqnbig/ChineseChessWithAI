@@ -9,7 +9,7 @@ using IntPoint = System.Drawing.Point;
 
 namespace 中国象棋
 {
-	class PathFinder
+	public class PathFinder
 	{
 		private static bool CanBeEaten(IntPoint location, Board board)
 		{
