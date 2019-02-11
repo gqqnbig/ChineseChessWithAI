@@ -249,9 +249,10 @@ namespace 中国象棋
 				{   //吃子
 					for (int xx = x - 1; xx >= 0; xx--)
 					{
-						if (pieces[location.Y, xx] != null && pieces[location.Y, xx].Color != p.Color)
+						if (pieces[location.Y, xx] != null)
 						{
-							moves.Add(new IntPoint(xx, location.Y));
+							if (pieces[location.Y, xx].Color != p.Color)
+								moves.Add(new IntPoint(xx, location.Y));
 							break;
 						}
 					}
@@ -267,9 +268,10 @@ namespace 中国象棋
 				{   //吃子
 					for (int xx = x + 1; xx < 9; xx++)
 					{
-						if (pieces[location.Y, xx] != null && pieces[location.Y, xx].Color != p.Color)
+						if (pieces[location.Y, xx] != null)
 						{
-							moves.Add(new IntPoint(xx, location.Y));
+							if (pieces[location.Y, xx].Color != p.Color)
+								moves.Add(new IntPoint(xx, location.Y));
 							break;
 						}
 					}
@@ -285,9 +287,10 @@ namespace 中国象棋
 				{
 					for (int yy = y - 1; yy >= 0; yy--)
 					{
-						if (pieces[yy, location.X] != null && pieces[yy, location.X].Color != p.Color)
+						if (pieces[yy, location.X] != null)
 						{
-							moves.Add(new IntPoint(location.X, yy));
+							if (pieces[yy, location.X].Color != p.Color)
+								moves.Add(new IntPoint(location.X, yy));
 							break;
 						}
 					}
@@ -303,9 +306,10 @@ namespace 中国象棋
 				{
 					for (int yy = y + 1; yy < 10; yy++)
 					{
-						if (pieces[yy, location.X] != null && pieces[yy, location.X].Color != p.Color)
+						if (pieces[yy, location.X] != null)
 						{
-							moves.Add(new IntPoint(location.X, yy));
+							if (pieces[yy, location.X].Color != p.Color)
+								moves.Add(new IntPoint(location.X, yy));
 							break;
 						}
 					}
