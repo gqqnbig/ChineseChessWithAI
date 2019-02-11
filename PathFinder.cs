@@ -38,11 +38,11 @@ namespace 中国象棋
 			if (piece.Name == "士" || piece.Name == "象")
 				return int.MaxValue;
 
-#if DEBUG
+//#if DEBUG
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
 			var expandedNodes = 0;
-#endif
+//#endif
 			var openList = new PriorityQueue<SearchState>((a, b) => a.F.CompareTo(b.F), 9 * 10);
 			openList.Enqueue(new SearchState { Location = location, G = 0, Board = board });
 
@@ -59,16 +59,16 @@ namespace 中国象棋
 
 				if (MainWindow.IsWin(searchState.Board, searchState.TargetPiece.Color).GetValueOrDefault(false))
 				{
-#if DEBUG
+//#if DEBUG
 					sw.Stop();
-					Debug.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
-#endif
+					Console.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
+//#endif
 					return searchState.G;
 				}
 
-#if DEBUG
+//#if DEBUG
 				expandedNodes++;
-#endif
+//#endif
 				foreach (var movement in searchState.TargetPiece.GetPossibleMovements(searchState.Location, searchState.Board))
 				{
 					var nextBoard = searchState.Board.Move(searchState.Location, movement, out _);
@@ -78,10 +78,10 @@ namespace 中国象棋
 				}
 			}
 
-#if DEBUG
+//#if DEBUG
 			sw.Stop();
-			Debug.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
-#endif       
+			Console.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
+//#endif       
 			return int.MaxValue;
 		}
 

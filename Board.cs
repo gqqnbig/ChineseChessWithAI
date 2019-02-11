@@ -488,7 +488,7 @@ namespace 中国象棋
 
 			board[3, 0] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 			board[3, 2] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
-			board[3, 4] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
+			//board[3, 4] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 			board[3, 6] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 			board[3, 8] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Black };
 
@@ -502,7 +502,7 @@ namespace 中国象棋
 			board[9, 7] = new Piece(moves马) { Name = "马", Color = ChessColor.Red };
 			board[9, 8] = new Piece(moves车) { Name = "车", Color = ChessColor.Red };
 
-			board[7, 1] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
+			board[3, 4] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
 			board[7, 7] = new Piece(moves炮) { Name = "炮", Color = ChessColor.Red };
 
 			board[6, 0] = new Piece(moves兵) { Name = "兵", Color = ChessColor.Red };
