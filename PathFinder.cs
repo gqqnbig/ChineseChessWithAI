@@ -57,7 +57,7 @@ namespace 中国象棋
 #endif
 				closedList.Add(searchState.Board);
 
-				if (MainWindow.IsWin(searchState.Board, searchState.TargetPiece.Color).GetValueOrDefault(false))
+				if (searchState.Board.IsWin(searchState.TargetPiece.Color))
 				{
 //#if DEBUG
 					sw.Stop();
@@ -73,7 +73,7 @@ namespace 中国象棋
 				{
 					var nextBoard = searchState.Board.Move(searchState.Location, movement, out _);
 					//吃掉将就赢了，不用考虑自己会不会被吃掉。
-					if ((MainWindow.IsWin(nextBoard, searchState.TargetPiece.Color).GetValueOrDefault(false) || CanBeEaten(movement, nextBoard) == false) && closedList.Contains(nextBoard) == false)
+					if ((nextBoard.IsWin(searchState.TargetPiece.Color) || CanBeEaten(movement, nextBoard) == false) && closedList.Contains(nextBoard) == false)
 						openList.Enqueue(new SearchState { Location = movement, Board = nextBoard, G = searchState.G + 1, });
 				}
 			}

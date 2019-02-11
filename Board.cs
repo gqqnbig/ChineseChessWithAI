@@ -356,29 +356,14 @@ namespace 中国象棋
 
 		public Piece this[IntPoint p] => board[p.Y, p.X];
 
-		IntPoint? redJiangLocation;
-		public IntPoint RedJiangLocation
-		{
-			get
-			{
-				if (redJiangLocation == null)
-					redJiangLocation = CoordinatesOf(board, p => p.Name == "将" && p.Color == ChessColor.Red);
+		public IntPoint RedJiangLocation { get; private set; }
+		
+		public IntPoint BlackJiangLocation { get; private set; }
 
-				return redJiangLocation.Value;
-			}
-		}
+		public bool IsBlackWin { get; private set; }
+		public bool IsRedWin { get; private set; }
 
-		IntPoint? blackJiangLocation;
-		public IntPoint BlackJiangLocation
-		{
-			get
-			{
-				if (blackJiangLocation == null)
-					blackJiangLocation = CoordinatesOf(board, p => p.Name == "将" && p.Color == ChessColor.Black);
-
-				return blackJiangLocation.Value;
-			}
-		}
+		public bool IsWin(ChessColor color) => color == ChessColor.Red ? IsRedWin : IsBlackWin;
 
 
 		private ulong redXEqualityRepresentation = 0;
@@ -465,6 +450,7 @@ namespace 中国象棋
 			this.board = board;
 
 			InitilizeEqualityRepresentation();
+			InitializeJiangLocations();
 		}
 
 		/// <summary>
@@ -513,6 +499,7 @@ namespace 中国象棋
 
 
 			InitilizeEqualityRepresentation();
+			InitializeJiangLocations();
 		}
 
 		/// <summary>
@@ -562,7 +549,53 @@ namespace 中国象棋
 					}
 				}
 			}
+			InitilizeEqualityRepresentation();
+			InitializeJiangLocations();
 
+		}
+
+
+		private void InitializeJiangLocations()
+		{
+			RedJiangLocation = new IntPoint(-1, -1);
+			BlackJiangLocation = new IntPoint(-1, -1);
+
+			for (int x = 3; x <= 5; x++)
+			{
+				for (int y = 0; y <= 2; y++)
+				{
+					if (board[y, x]?.Name == "将")
+					{
+						if (board[y, x].Color == ChessColor.Red)
+							RedJiangLocation = new IntPoint(x, y);
+						else
+							BlackJiangLocation = new IntPoint(x, y);
+
+						break;
+					}
+				}
+			}
+
+			for (int x = 3; x <= 5; x++)
+			{
+				for (int y = 7; y <= 9; y++)
+				{
+					if (board[y, x]?.Name == "将")
+					{
+						if (board[y, x].Color == ChessColor.Red)
+							RedJiangLocation = new IntPoint(x, y);
+						else
+							BlackJiangLocation = new IntPoint(x, y);
+						break;
+					}
+				}
+			}
+
+			if (RedJiangLocation.X == -1)
+				IsBlackWin = true;
+
+			if (BlackJiangLocation.X == -1)
+				IsRedWin = true;
 		}
 
 
@@ -673,24 +706,6 @@ namespace 中国象棋
 				return hash;
 			}
 		}
-
-		private static IntPoint CoordinatesOf<T>(T[,] matrix, Predicate<T> p)
-		{
-			int w = matrix.GetLength(0); // width
-			int h = matrix.GetLength(1); // height
-
-			for (int x = 0; x < w; ++x)
-			{
-				for (int y = 0; y < h; ++y)
-				{
-					if (matrix[x, y] != null && p(matrix[x, y]))
-						return new IntPoint(y, x);
-				}
-			}
-
-			return new IntPoint(-1, -1);
-		}
-
 
 		public int Count => throw new NotImplementedException();
 
