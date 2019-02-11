@@ -81,10 +81,15 @@ namespace 中国象棋
 		private void Button_Checked(object sender, RoutedEventArgs e)
 		{
 			ToggleButton button = (ToggleButton)sender;
-			//HighlightPossibleMovements(button);
+			HighlightPossibleMovements(button);
 
 			int x = Grid.GetColumn(button);
 			int y = Grid.GetRow(button);
+
+			ConsoleManager.Show();
+
+			Console.WriteLine(PathFinder.FindMovesCountToJiang(pieces[y, x], new IntPoint(x, y), pieces));
+			Console.WriteLine(PathFinder.FindMovesCountToJiang(pieces[y, x], new IntPoint(x, y), pieces));
 			Console.WriteLine(PathFinder.FindMovesCountToJiang(pieces[y, x], new IntPoint(x, y), pieces));
 		}
 
