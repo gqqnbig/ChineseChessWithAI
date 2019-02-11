@@ -39,6 +39,10 @@ namespace 中国象棋
 
 		private void InitilizeEqualityRepresentation()
 		{
+			redXEqualityRepresentation = 0;
+			redYEqualityRepresentation = 0;
+			blackXEqualityRepresentation = 0;
+			blackYEqualityRepresentation = 0;
 			for (int x = 0; x < 9; x++)
 			{
 				for (int y = 0; y < 10; y++)
@@ -90,7 +94,7 @@ namespace 中国象棋
 		{
 			this.board = board;
 
-			InitilizeEqualityRepresentation();
+			//InitilizeEqualityRepresentation();
 			InitializeJiangLocations();
 		}
 
@@ -249,13 +253,65 @@ namespace 中国象棋
 		{
 			Debug.Assert(board[location.Y, location.X] != null, $"想要从({location.X},{location.Y})走子，但该位置没有棋子。");
 
+
 			var newBoard = (Piece[,])board.Clone();
 			eatenPiece = newBoard[targetLocation.Y, targetLocation.X];
 
 			newBoard[targetLocation.Y, targetLocation.X] = newBoard[location.Y, location.X];
 			newBoard[location.Y, location.X] = null;
 
-			return new Board(newBoard);
+			var b = new Board(newBoard);
+			b.redXEqualityRepresentation = redXEqualityRepresentation;
+			b.redYEqualityRepresentation = redYEqualityRepresentation;
+			b.blackXEqualityRepresentation = blackXEqualityRepresentation;
+			b.blackYEqualityRepresentation = blackYEqualityRepresentation;
+
+			var movingColor = board[location.Y, location.X].Color;
+			var movingId = board[location.Y, location.X].ID;
+			if (movingColor == ChessColor.Red)
+			{
+				b.redXEqualityRepresentation -= (ulong)((location.X + 1) * Math.Pow(11, movingId));
+				b.redYEqualityRepresentation -= (ulong)((location.Y + 1) * Math.Pow(11, movingId));
+
+				b.redXEqualityRepresentation += (ulong)((targetLocation.X + 1) * Math.Pow(11, movingId));
+				b.redYEqualityRepresentation += (ulong)((targetLocation.Y + 1) * Math.Pow(11, movingId));
+
+				if (eatenPiece != null)
+				{
+					b.blackXEqualityRepresentation -= (ulong)((targetLocation.X + 1) * Math.Pow(11, eatenPiece.ID));
+					b.blackYEqualityRepresentation -= (ulong)((targetLocation.Y + 1) * Math.Pow(11, eatenPiece.ID));
+				}
+			}
+			else
+			{
+				b.blackXEqualityRepresentation -= (ulong)((location.X + 1) * Math.Pow(11, movingId));
+				b.blackYEqualityRepresentation -= (ulong)((location.Y + 1) * Math.Pow(11, movingId));
+
+				b.blackXEqualityRepresentation += (ulong)((targetLocation.X + 1) * Math.Pow(11, movingId));
+				b.blackYEqualityRepresentation += (ulong)((targetLocation.Y + 1) * Math.Pow(11, movingId));
+
+				if (eatenPiece != null)
+				{
+					b.redXEqualityRepresentation -= (ulong)((targetLocation.X + 1) * Math.Pow(11, eatenPiece.ID));
+					b.redYEqualityRepresentation -= (ulong)((targetLocation.Y + 1) * Math.Pow(11, eatenPiece.ID));
+				}
+			}
+
+#if DEBUG
+			ulong rx = b.redXEqualityRepresentation,
+				  ry = b.redYEqualityRepresentation,
+				  bx = b.blackXEqualityRepresentation,
+				  by = b.blackYEqualityRepresentation;
+
+			b.InitilizeEqualityRepresentation();
+
+			Debug.Assert(b.redXEqualityRepresentation==rx);
+			Debug.Assert(b.redYEqualityRepresentation==ry);
+			Debug.Assert(b.blackXEqualityRepresentation==bx);
+			Debug.Assert(b.blackYEqualityRepresentation==by);
+#endif
+
+			return b;
 		}
 
 
