@@ -90,60 +90,17 @@ namespace 中国象棋
 			public SearchState Parent { get; set; }
 
 			public IntPoint Location { get; set; }
+
+
+			private float? h;
 			public float H
 			{
 				get
 				{
-					var jiang = Board.GetOppositeJiangLocation(TargetPiece.Color);
-					if (jiang.X == -1)
-						return 0;
-					switch (TargetPiece.Name)
-					{
-						case "车":
-						case "炮":
-							if (Location.X != jiang.X && Location.Y != jiang.Y)
-								return 2;
-							else
-								return 1;
-						case "马":
-							//https://stackoverflow.com/a/41704071/746461
-							//answered Jan 17 '17 at 18:08
-							//Anthor: simon
+					if (h == null)
+						h = GetHeuristic();
 
-							int dx = Math.Abs(Location.X - jiang.X);
-							int dy = Math.Abs(Location.Y - jiang.Y);
-
-							if (dx < dy)
-							{
-								var t = dx;
-								dx = dy;
-								dy = t;
-							}
-
-							if (dx == 1 && dy == 0)
-								return 3;
-							if (dx == 2 && dy == 2)
-								return 4;
-
-							var delta = dx - dy;
-							if (dy > delta)
-								return delta - 2 * (int)Math.Floor((delta - dy) / 3d);
-							else
-								return delta - 2 * (int)Math.Floor((delta - dy) / 4d);
-
-						case "兵":
-							return Math.Abs(Location.X - jiang.X) + Math.Abs(Location.Y - jiang.Y);
-
-						case "将":
-							if (Location.X == jiang.X)
-								return 1;
-							else
-								return float.PositiveInfinity;
-
-
-						default:
-							return float.PositiveInfinity;
-					}
+					return h.Value;
 				}
 			}
 			public int G { get; set; }
@@ -156,6 +113,113 @@ namespace 中国象棋
 			public Board Board { get; set; }
 
 			public Piece TargetPiece => Board[Location.Y, Location.X];
+
+
+			private float GetHeuristic()
+			{
+				var jiang = Board.GetOppositeJiangLocation(TargetPiece.Color);
+				if (jiang.X == -1)
+					return 0;
+				switch (TargetPiece.Name)
+				{
+					case "车":
+						return Get车Heuristic(Location, jiang);
+					case "炮":
+						if (Location.X != jiang.X && Location.Y != jiang.Y)
+							return 2;
+						else
+							return 1;
+					case "马":
+						//https://stackoverflow.com/a/41704071/746461
+						//answered Jan 17 '17 at 18:08
+						//Anthor: simon
+
+						int dx = Math.Abs(Location.X - jiang.X);
+						int dy = Math.Abs(Location.Y - jiang.Y);
+
+						if (dx < dy)
+						{
+							var t = dx;
+							dx = dy;
+							dy = t;
+						}
+
+						if (dx == 1 && dy == 0)
+							return 3;
+						if (dx == 2 && dy == 2)
+							return 4;
+
+						var delta = dx - dy;
+						if (dy > delta)
+							return delta - 2 * (int)Math.Floor((delta - dy) / 3d);
+						else
+							return delta - 2 * (int)Math.Floor((delta - dy) / 4d);
+
+					case "兵":
+						return Math.Abs(Location.X - jiang.X) + Math.Abs(Location.Y - jiang.Y);
+
+					case "将":
+						if (Location.X == jiang.X)
+							return 1;
+						else
+							return float.PositiveInfinity;
+
+
+					default:
+						return float.PositiveInfinity;
+				}
+			}
+
+			private float Get车Heuristic(IntPoint start, IntPoint destination)
+			{
+				if (start == destination)
+					return 0;
+
+				if (start.X != destination.X && start.Y != destination.Y)
+				{
+					//路径1
+					var a = Get车Heuristic(start, new IntPoint(start.X, destination.Y));
+					if (a < 3)
+						a += Get车Heuristic(new IntPoint(start.X, destination.Y), destination);
+
+					//路径2
+					var b = Get车Heuristic(start, new IntPoint(destination.X, start.Y));
+					if (b < 3 && b < a)
+						b += Get车Heuristic(new IntPoint(destination.X, start.Y), destination);
+
+					return Math.Min(3, Math.Min(a, b));
+				}
+
+				if (start.X == destination.X)
+				{
+					var oppositePieceCount = 1;
+					foreach (var y in RangeExcludeExclude(start.Y, destination.Y))
+					{
+						if (Board[y, start.X] == null)
+							continue;
+						else if (Board[y, start.X].Color == TargetPiece.Color) //中间有我方棋子阻挡
+							return 3;
+						else
+							oppositePieceCount++;
+					}
+					return oppositePieceCount;
+				}
+				else
+				{
+					var oppositePieceCount = 1;
+					foreach (var x in RangeExcludeExclude(start.X, destination.X))
+					{
+						if (Board[start.Y, x] == null)
+							continue;
+						else if (Board[start.Y, x].Color == TargetPiece.Color) //中间有我方棋子阻挡
+							return 3;
+						else
+							oppositePieceCount++;
+					}
+					return oppositePieceCount;
+				}
+			}
+
 
 			public override int GetHashCode()
 			{
@@ -175,21 +239,25 @@ namespace 中国象棋
 			{
 				return $"G={G}, H={H}, F={G + H}";
 			}
-		}
-	}
 
-	public class AIPiece : Piece
-	{
-		private IEnumerable<IntPoint> cachedMoves;
 
-		public AIPiece(Func<Piece, IntPoint, Board, IEnumerable<IntPoint>> getPossibleMovements) : base(getPossibleMovements)
-		{ }
-
-		public override IEnumerable<IntPoint> GetPossibleMovements(IntPoint location, Board piecesOnBoard)
-		{
-			if (cachedMoves == null)
-				cachedMoves = base.GetPossibleMovements(location, piecesOnBoard);
-			return cachedMoves;
+			private static IEnumerable<int> RangeExcludeExclude(int start, int to)
+			{
+				if (start < to)
+				{
+					while (++start < to)
+					{
+						yield return start;
+					}
+				}
+				else
+				{
+					while (--start > to)
+					{
+						yield return start;
+					}
+				}
+			}
 		}
 	}
 }
