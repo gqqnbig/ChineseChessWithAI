@@ -72,7 +72,8 @@ namespace 中国象棋
 				foreach (var movement in searchState.TargetPiece.GetPossibleMovements(searchState.Location, searchState.Board))
 				{
 					var nextBoard = searchState.Board.Move(searchState.Location, movement, out _);
-					if (CanBeEaten(movement, nextBoard) == false && closedList.Contains(nextBoard) == false)
+					//吃掉将就赢了，不用考虑自己会不会被吃掉。
+					if ((MainWindow.IsWin(nextBoard, searchState.TargetPiece.Color).GetValueOrDefault(false) || CanBeEaten(movement, nextBoard) == false) && closedList.Contains(nextBoard) == false)
 						openList.Enqueue(new SearchState { Location = movement, Board = nextBoard, G = searchState.G + 1, });
 				}
 			}
