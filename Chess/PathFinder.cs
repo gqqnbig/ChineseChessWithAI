@@ -175,6 +175,8 @@ namespace 中国象棋
 			{
 				if (start == destination)
 					return 0;
+				if (Board[destination]?.Color == TargetPiece.Color)
+					return float.PositiveInfinity;
 
 				if (start.X != destination.X && start.Y != destination.Y)
 				{
@@ -201,7 +203,12 @@ namespace 中国象棋
 						else if (Board[y, start.X].Color == TargetPiece.Color) //中间有我方棋子阻挡
 							return 3;
 						else
+						{
 							oppositePieceCount++;
+
+							if (oppositePieceCount == 3)
+								return 3;
+						}
 					}
 					return oppositePieceCount;
 				}
@@ -215,7 +222,12 @@ namespace 中国象棋
 						else if (Board[start.Y, x].Color == TargetPiece.Color) //中间有我方棋子阻挡
 							return 3;
 						else
+						{
 							oppositePieceCount++;
+
+							if (oppositePieceCount == 3)
+								return 3;
+						}
 					}
 					return oppositePieceCount;
 				}
