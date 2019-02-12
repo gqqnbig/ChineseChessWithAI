@@ -132,8 +132,8 @@ namespace 中国象棋
 
 				Panel.SetZIndex(border, 2);
 
-				Grid.SetColumn(border, move.X);
-				Grid.SetRow(border, move.Y);
+				Grid.SetColumn(border, move.Destination.X);
+				Grid.SetRow(border, move.Destination.Y);
 				board.Children.Add(border);
 			}
 		}

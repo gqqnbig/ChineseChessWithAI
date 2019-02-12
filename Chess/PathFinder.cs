@@ -21,7 +21,7 @@ namespace 中国象棋
 					if (board[y, x] == null)
 						continue;
 
-					if (board[y, x].Color != color && board[y, x].GetPossibleMovements(new IntPoint(x, y), board).Contains(location))
+					if (board[y, x].Color != color && board[y, x].GetPossibleMovements(new IntPoint(x, y), board).Any(m => m.Destination == location))
 						return true;
 				}
 			}
@@ -69,12 +69,14 @@ namespace 中国象棋
 //#if DEBUG
 				expandedNodes++;
 //#endif
-				foreach (var movement in searchState.TargetPiece.GetPossibleMovements(searchState.Location, searchState.Board))
+				foreach (var movement in searchState.TargetPiece.GetPossibleMovements(searchState.Location, searchState.Board, searchState.MoveFilters))
 				{
-					var nextBoard = searchState.Board.Move(searchState.Location, movement, out _);
+					var nextBoard = searchState.Board.Move(searchState.Location, movement.Destination, out _);
+					if (closedList.Contains(nextBoard))
+						continue;
 					//吃掉将就赢了，不用考虑自己会不会被吃掉。
-					if ((nextBoard.IsWin(searchState.TargetPiece.Color) || CanBeEaten(movement, nextBoard) == false) && closedList.Contains(nextBoard) == false)
-						openList.Enqueue(new SearchState { Location = movement, Board = nextBoard, G = searchState.G + 1, });
+					if ((nextBoard.IsWin(searchState.TargetPiece.Color) || CanBeEaten(movement.Destination, nextBoard) == false) && closedList.Contains(nextBoard) == false)
+						openList.Enqueue(new SearchState { Location = movement.Destination, Board = nextBoard, G = searchState.G + 1, MoveFilters = movement.PreventNext });
 				}
 			}
 
@@ -114,6 +116,8 @@ namespace 中国象棋
 			public Board Board { get; set; }
 
 			public Piece TargetPiece => Board[Location.Y, Location.X];
+
+			public MoveFilters MoveFilters { get; set; }
 
 
 			private float GetHeuristic()
