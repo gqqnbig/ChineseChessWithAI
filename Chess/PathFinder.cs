@@ -11,8 +11,9 @@ namespace 中国象棋
 {
 	public class PathFinder
 	{
-		private static bool CanBeEaten(IntPoint location, Board board)
+		private static List<IntPoint> BeEatenBy(IntPoint location, Board board)
 		{
+			List<IntPoint> list = new List<Point>();
 			ChessColor color = board[location.Y, location.X].Color;
 			for (int x = 0; x < 9; x++)
 			{
@@ -22,10 +23,11 @@ namespace 中国象棋
 						continue;
 
 					if (board[y, x].Color != color && board[y, x].GetPossibleMovements(new IntPoint(x, y), board).Any(m => m.Destination == location))
-						return true;
+						list.Add(new IntPoint(x, y));
 				}
 			}
-			return false;
+
+			return list;
 		}
 
 
@@ -38,52 +40,67 @@ namespace 中国象棋
 			if (piece.Name == "士" || piece.Name == "象")
 				return int.MaxValue;
 
-//#if DEBUG
+			//#if DEBUG
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
 			var expandedNodes = 0;
-//#endif
+			//#endif
 			var openList = new PriorityQueue<SearchState>((a, b) => a.F.CompareTo(b.F), 9 * 10);
-			openList.Enqueue(new SearchState { Location = location, G = 0, Board = board });
+			var jiangLocation = board.GetOppositeJiangLocation(board[location].Color);
+			openList.Enqueue(new SearchState(location, jiangLocation) { G = 0, Board = board });
 
 			var closedList = new HashSet<Board>();
 
 			while (openList.Count > 0)
 			{
-				var searchState = openList.Dequeue();
+				var currentState = openList.Dequeue();
 
 #if DEBUG
-				_ = searchState.H;
+				_ = currentState.H;
 #endif
-				closedList.Add(searchState.Board);
+				closedList.Add(currentState.Board);
 
-				if (searchState.Board.IsWin(searchState.TargetPiece.Color))
+				if (currentState.Location == currentState.GoalLocations.First.Value)
+					currentState.GoalLocations.RemoveFirst();
+
+				if (currentState.GoalLocations.Count == 0)
 				{
-//#if DEBUG
+					//#if DEBUG
 					sw.Stop();
 					Console.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
-//#endif
-					return searchState.G;
+					//#endif
+					return currentState.G;
 				}
 
-//#if DEBUG
+				//#if DEBUG
 				expandedNodes++;
-//#endif
-				foreach (var movement in searchState.TargetPiece.GetPossibleMovements(searchState.Location, searchState.Board, searchState.MoveFilters))
+				//#endif
+				foreach (var movement in currentState.TargetPiece.GetPossibleMovements(currentState.Location, currentState.Board, currentState.MoveFilters))
 				{
-					var nextBoard = searchState.Board.Move(searchState.Location, movement.Destination, out _);
+					var nextBoard = currentState.Board.Move(currentState.Location, movement.Destination, out _);
 					if (closedList.Contains(nextBoard))
 						continue;
+
+
+					var controllerList = BeEatenBy(movement.Destination, nextBoard);
+
 					//吃掉将就赢了，不用考虑自己会不会被吃掉。
-					if ((nextBoard.IsWin(searchState.TargetPiece.Color) || CanBeEaten(movement.Destination, nextBoard) == false) && closedList.Contains(nextBoard) == false)
-						openList.Enqueue(new SearchState { Location = movement.Destination, Board = nextBoard, G = searchState.G + 1, MoveFilters = movement.PreventNext });
+					if (controllerList.Count == 0 || nextBoard.IsWin(currentState.TargetPiece.Color))
+						openList.Enqueue(new SearchState(movement.Destination, jiangLocation) { Board = nextBoard, G = currentState.G + 1, MoveFilters = movement.PreventNext });
+					else
+					{
+						//既然会被这些子吃掉，何不试试先吃掉它们。
+
+						foreach (var controllerPoint in controllerList.Except(currentState.GoalLocations))
+							openList.Enqueue(new SearchState(currentState.Location, controllerPoint, currentState.GoalLocations) { Board = currentState.Board, G = currentState.G });
+					}
 				}
 			}
 
-//#if DEBUG
+			//#if DEBUG
 			sw.Stop();
 			Console.WriteLine($"ExpandedNodes={expandedNodes}，用时{sw.ElapsedMilliseconds}。");
-//#endif       
+			//#endif       
 			return int.MaxValue;
 		}
 
@@ -92,16 +109,37 @@ namespace 中国象棋
 		{
 			public SearchState Parent { get; set; }
 
-			public IntPoint Location { get; set; }
+			public IntPoint Location { get; }
+
+			public LinkedList<IntPoint> GoalLocations { get; private set; }
 
 
 			private float? h;
+
+
 			public float H
 			{
 				get
 				{
 					if (h == null)
-						h = GetHeuristic();
+					{
+						Debug.Assert(GoalLocations.Last.Value == Board.GetOppositeJiangLocation(TargetPiece.Color) || Board.GetOppositeJiangLocation(TargetPiece.Color).X == -1);
+						h = 0;
+
+						if (Board.GetOppositeJiangLocation(TargetPiece.Color).X != -1)
+						{
+							var l = Location;
+							var node = GoalLocations.First;
+							while (node != null)
+							{
+								h += GetHeuristic(l, node.Value);
+								l = node.Value;
+								node = node.Next;
+							}
+
+							Debug.Assert(float.IsInfinity(h.Value) == false);
+						}
+					}
 
 					return h.Value;
 				}
@@ -119,18 +157,37 @@ namespace 中国象棋
 
 			public MoveFilters MoveFilters { get; set; }
 
-
-			private float GetHeuristic()
+			public SearchState(IntPoint startLocation, IntPoint goalLocation)
 			{
-				var jiang = Board.GetOppositeJiangLocation(TargetPiece.Color);
-				if (jiang.X == -1)
-					return 0;
+				Location = startLocation;
+				GoalLocations = new LinkedList<IntPoint>();
+				GoalLocations.AddLast(goalLocation);
+			}
+
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="startLocation"></param>
+			/// <param name="preGoal">在完成goalLocations之前，先完成preGoal</param>
+			/// <param name="goalLocations"></param>
+			public SearchState(IntPoint startLocation, IntPoint preGoal, LinkedList<IntPoint> goalLocations)
+			{
+				Location = startLocation;
+				GoalLocations = new LinkedList<IntPoint>(goalLocations);
+				GoalLocations.AddFirst(preGoal);
+			}
+
+			private float GetHeuristic(IntPoint startLocation, IntPoint goalLocation)
+			{
+				Debug.Assert(startLocation != goalLocation);
+				Debug.Assert(Board.GetOppositeJiangLocation(TargetPiece.Color).X != -1, "应该有将。将被吃掉的情况在FindMovesCountToJiang应该已经被计算了。");
+
 				switch (TargetPiece.Name)
 				{
 					case "车":
-						return Get车Heuristic(Location, jiang);
+						return Get车Heuristic(startLocation, goalLocation);
 					case "炮":
-						if (Location.X != jiang.X && Location.Y != jiang.Y)
+						if (startLocation.X != goalLocation.X && startLocation.Y != goalLocation.Y)
 							return 2;
 						else
 							return 1;
@@ -139,8 +196,8 @@ namespace 中国象棋
 						//answered Jan 17 '17 at 18:08
 						//Anthor: simon
 
-						int dx = Math.Abs(Location.X - jiang.X);
-						int dy = Math.Abs(Location.Y - jiang.Y);
+						int dx = Math.Abs(startLocation.X - goalLocation.X);
+						int dy = Math.Abs(startLocation.Y - goalLocation.Y);
 
 						if (dx < dy)
 						{
@@ -161,15 +218,13 @@ namespace 中国象棋
 							return delta - 2 * (int)Math.Floor((delta - dy) / 4d);
 
 					case "兵":
-						return Math.Abs(Location.X - jiang.X) + Math.Abs(Location.Y - jiang.Y);
+						return Math.Abs(startLocation.X - goalLocation.X) + Math.Abs(startLocation.Y - goalLocation.Y);
 
 					case "将":
-						if (Location.X == jiang.X)
+						if (startLocation.X == goalLocation.X)
 							return 1;
 						else
 							return float.PositiveInfinity;
-
-
 					default:
 						return float.PositiveInfinity;
 				}
