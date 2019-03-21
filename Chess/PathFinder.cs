@@ -55,6 +55,7 @@ namespace 中国象棋
 #if DEBUG
 				_ = searchState.H;
 #endif
+				//不能用[Location,对方棋子数量]为键，因为不能表示吃掉不同的棋子。
 				closedList.Add(searchState.Board);
 
 				if (searchState.Board.IsWin(searchState.TargetPiece.Color))
