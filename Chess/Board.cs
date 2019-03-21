@@ -52,13 +52,13 @@ namespace 中国象棋
 						if (board[y, x].Color == ChessColor.Red)
 						{
 							//11进制
-							redXEqualityRepresentation += (ulong)((x + 1) * Math.Pow(11, board[y, x].ID));
-							redYEqualityRepresentation += (ulong)((y + 1) * Math.Pow(11, board[y, x].ID));
+							redXEqualityRepresentation += GetEqualityDigit(board[y, x].ID, x);
+							redYEqualityRepresentation += GetEqualityDigit(board[y, x].ID, y);
 						}
 						else
 						{
-							blackXEqualityRepresentation += (ulong)((x + 1) * Math.Pow(11, board[y, x].ID));
-							blackYEqualityRepresentation += (ulong)((y + 1) * Math.Pow(11, board[y, x].ID));
+							blackXEqualityRepresentation += GetEqualityDigit(board[y, x].ID, x);
+							blackYEqualityRepresentation += GetEqualityDigit(board[y, x].ID, y);
 						}
 					}
 				}
@@ -270,30 +270,30 @@ namespace 中国象棋
 			var movingId = board[location.Y, location.X].ID;
 			if (movingColor == ChessColor.Red)
 			{
-				b.redXEqualityRepresentation -= (ulong)((location.X + 1) * Math.Pow(11, movingId));
-				b.redYEqualityRepresentation -= (ulong)((location.Y + 1) * Math.Pow(11, movingId));
+				b.redXEqualityRepresentation -= GetEqualityDigit(movingId, location.X);
+				b.redYEqualityRepresentation -= GetEqualityDigit(movingId, location.Y);
 
-				b.redXEqualityRepresentation += (ulong)((targetLocation.X + 1) * Math.Pow(11, movingId));
-				b.redYEqualityRepresentation += (ulong)((targetLocation.Y + 1) * Math.Pow(11, movingId));
+				b.redXEqualityRepresentation += GetEqualityDigit(movingId, targetLocation.X);
+				b.redYEqualityRepresentation += GetEqualityDigit(movingId, targetLocation.Y);
 
 				if (eatenPiece != null)
 				{
-					b.blackXEqualityRepresentation -= (ulong)((targetLocation.X + 1) * Math.Pow(11, eatenPiece.ID));
-					b.blackYEqualityRepresentation -= (ulong)((targetLocation.Y + 1) * Math.Pow(11, eatenPiece.ID));
+					b.blackXEqualityRepresentation -= GetEqualityDigit(eatenPiece.ID, targetLocation.X);
+					b.blackYEqualityRepresentation -= GetEqualityDigit(eatenPiece.ID, targetLocation.Y);
 				}
 			}
 			else
 			{
-				b.blackXEqualityRepresentation -= (ulong)((location.X + 1) * Math.Pow(11, movingId));
-				b.blackYEqualityRepresentation -= (ulong)((location.Y + 1) * Math.Pow(11, movingId));
+				b.blackXEqualityRepresentation -= GetEqualityDigit(movingId, location.X);
+				b.blackYEqualityRepresentation -= GetEqualityDigit(movingId, location.Y);
 
-				b.blackXEqualityRepresentation += (ulong)((targetLocation.X + 1) * Math.Pow(11, movingId));
-				b.blackYEqualityRepresentation += (ulong)((targetLocation.Y + 1) * Math.Pow(11, movingId));
+				b.blackXEqualityRepresentation += GetEqualityDigit(movingId, targetLocation.X);
+				b.blackYEqualityRepresentation += GetEqualityDigit(movingId, targetLocation.Y);
 
 				if (eatenPiece != null)
 				{
-					b.redXEqualityRepresentation -= (ulong)((targetLocation.X + 1) * Math.Pow(11, eatenPiece.ID));
-					b.redYEqualityRepresentation -= (ulong)((targetLocation.Y + 1) * Math.Pow(11, eatenPiece.ID));
+					b.redXEqualityRepresentation -= GetEqualityDigit(eatenPiece.ID, targetLocation.X);
+					b.redYEqualityRepresentation -= GetEqualityDigit(eatenPiece.ID, targetLocation.Y);
 				}
 			}
 
@@ -459,5 +459,10 @@ namespace 中国象棋
 			};
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ulong GetEqualityDigit(int id, int locationIndex)
+		{
+			return (ulong)((locationIndex + 1) * Math.Pow(11, id));
+		}
 	}
 }
