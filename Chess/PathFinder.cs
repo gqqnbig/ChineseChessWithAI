@@ -44,13 +44,16 @@ namespace 中国象棋
 			var expandedNodes = 0;
 //#endif
 			var openList = new PriorityQueue<SearchState>((a, b) => a.F.CompareTo(b.F), 9 * 10);
+			var openListHash = new HashSet<SearchState>();
 			openList.Enqueue(new SearchState { Location = location, G = 0, Board = board });
+			openListHash.Add(new SearchState { G = 0, Board = board });
 
 			var closedList = new HashSet<Board>();
 
 			while (openList.Count > 0)
 			{
 				var searchState = openList.Dequeue();
+				openListHash.Remove(searchState);
 
 #if DEBUG
 				_ = searchState.H;
@@ -77,7 +80,27 @@ namespace 中国象棋
 						continue;
 					//吃掉将就赢了，不用考虑自己会不会被吃掉。
 					if ((nextBoard.IsWin(searchState.TargetPiece.Color) || CanBeEaten(movement.Destination, nextBoard) == false) && closedList.Contains(nextBoard) == false)
-						openList.Enqueue(new SearchState { Location = movement.Destination, Board = nextBoard, G = searchState.G + 1, MoveFilters = movement.PreventNext });
+					{
+						var s = new SearchState { Location = movement.Destination, Board = nextBoard, G = searchState.G + 1, MoveFilters = movement.PreventNext };
+						openListHash.TryGetValue(s, out var duplicate);
+						if (duplicate != null)
+						{
+							if (duplicate.G > s.G)
+							{
+								Debug.Assert(duplicate.H == s.H);
+								openList.Remove(duplicate);
+								openListHash.Remove(duplicate);
+
+								openList.Enqueue(s);
+								openListHash.Add(s);
+							}
+						}
+						else
+						{
+							openList.Enqueue(s);
+							openListHash.Add(s);
+						}
+					}
 				}
 			}
 
@@ -107,6 +130,10 @@ namespace 中国象棋
 					return h.Value;
 				}
 			}
+
+			/// <summary>
+			/// 从起始状态到当前状态的损失。
+			/// </summary>
 			public int G { get; set; }
 
 			/// <summary>
